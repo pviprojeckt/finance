@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Управление финансами</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #f4f6f9);
+      --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+      --text-color: var(--tg-theme-text-color, #222222);
+      --hint-color: var(--tg-theme-hint-color, #888888);
+      --button-color: var(--tg-theme-button-color, #2481cc);
+      --button-text: var(--tg-theme-button-text-color, #ffffff);
+      --green: #2ecc71;
+      --red: #e74c3c;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .container { max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .hero {
+      text-align: center;
+      background: linear-gradient(135deg, #2481cc, #1b5e9e);
+      color: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .hero h1 { margin: 0 0 6px 0; font-size: 28px; }
+    .hero p { margin: 0; opacity: 0.85; font-size: 14px; }
+    .row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+    input, button {
+      font-family: inherit;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      box-sizing: border-box;
+    }
+    input { width: 100%; margin-top: 4px; }
+    button {
+      background-color: var(--button-color);
+      color: var(--button-text);
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:active { opacity: 0.8; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .tab {
+      flex: 1; padding: 10px; text-align: center; background: var(--card-bg);
+      border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px;
+    }
+    .tab.active { background: var(--button-color); color: var(--button-text); }
+    .section { display: none; }
+    .section.active { display: block; }
+    .sync-status { font-size: 11px; text-align: right; color: var(--hint-color); margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div id="syncStatus" class="sync-status">☁️ Облако: синхронизировано</div>
+
+  <div class="hero">
+    <h1 id="heroSafeSum">0 ₽</h1>
+    <p>Безопасный лимит на сегодня</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('main')">Обзор</div>
+    <div class="tab" onclick="switchTab('fixed')">Обязательные</div>
+    <div class="tab" onclick="switchTab('limits')">Лимиты</div>
+  </div>
+
+  <!-- ВКЛАДКА 1: ОБЗОР -->
+  <div id="tab-main" class="section active">
+    <div class="card">
+      <div class="row">
+        <span>Месячный доход (ЗП + %)</span>
+        <strong id="incomeDisplay">0 ₽</strong>
+      </div>
+      <button onclick="promptIncome()" style="width:100%; margin-top:10px;">+ Внести смену / ЗП</button>
+    </div>
+
+    <div class="card">
+      <h3>Структура бюджета</h3>
+      <div class="row"><span>Обязательные счета:</span> <strong id="totalFixed">0 ₽</strong></div>
+      <div class="row"><span>Базовые лимиты:</span> <strong id="totalLimits">0 ₽</strong></div>
+      <div class="row" style="color: var(--green);"><span>В копилку (20%):</span> <strong id="targetSavings">0 ₽</strong></div>
+    </div>
+  </div>
+
+  <!-- ВКЛАДКА 2: ОБЯЗАТЕЛЬНЫЕ РАСХОДЫ -->
+  <div id="tab-fixed" class="section">
+    <div class="card">
+      <h3>Обязательные платежи</h3>
+      <div id="fixedList"></div>
+      <button onclick="addFixedItem()" style="width:100%; margin-top:10px;">+ Добавить обязательный платеж</button>
+    </div>
+  </div>
+
+  <!-- ВКЛАДКА 3: ЛИМИТЫ -->
+  <div id="tab-limits" class="section">
+    <div class="card">
+      <h3>Переменные лимиты</h3>
+      <div id="limitsList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  if (tg) tg.expand();
+  const USER_ID = tg?.initDataUnsafe?.user?.id || 'dev_user_test';
+
+  let state = {
+    income: 85000,
+    fixed: [
+      { id: '1', title: 'Аренда квартиры', amount: 25000, paid: false },
+      { id: '2', title: 'Интернет и связь', amount: 1500, paid: false },
+      { id: '3', title: 'Сервер / Прокси', amount: 500, paid: false }
+    ],
+    limits: [
+      { id: 'l1', title: 'Продукты и быт', limit: 18000, spent: 4200 },
+      { id: 'l2', title: 'Спортпит и здоровье', limit: 5000, spent: 1500 }
+    ]
+  };
+
+  let syncTimeout;
+  async function saveState() {
+    document.getElementById('syncStatus').innerText = '☁️ Синхронизация...';
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(async () => {
+      try {
+        await fetch('/api/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: USER_ID, state })
+        });
+        document.getElementById('syncStatus').innerText = '☁️ Облако: синхронизировано';
+      } catch (e) {
+        document.getElementById('syncStatus').innerText = '⚠️ Ошибка синхронизации';
+      }
+    }, 400);
+  }
+
+  async function loadState() {
+    try {
+      const res = await fetch(`/api/sync?userId=${USER_ID}`);
+      const data = await res.json();
+      if (data.state) state = data.state;
+
+      // Автоподстановка дохода из бота через ?income=
+      const urlParams = new URLSearchParams(window.location.search);
+      const botIncome = Number(urlParams.get('income'));
+      if (botIncome > 0 && state.income !== botIncome) {
+        state.income = botIncome;
+        saveState();
+      }
+      render();
+    } catch (e) {
+      render();
+    }
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  function render() {
+    document.getElementById('incomeDisplay').innerText = state.income.toLocaleString() + ' ₽';
+    
+    const sumFixed = state.fixed.reduce((acc, item) => acc + item.amount, 0);
+    const sumLimits = state.limits.reduce((acc, item) => acc + item.limit, 0);
+    const targetSave = Math.round(state.income * 0.2);
+    
+    document.getElementById('totalFixed').innerText = sumFixed.toLocaleString() + ' ₽';
+    document.getElementById('totalLimits').innerText = sumLimits.toLocaleString() + ' ₽';
+    document.getElementById('targetSavings').innerText = targetSave.toLocaleString() + ' ₽';
+
+    const safeSum = state.income - sumFixed - sumLimits - targetSave;
+    document.getElementById('heroSafeSum').innerText = safeSum.toLocaleString() + ' ₽';
+
+    // Рендер обязательных
+    let fixedHtml = '';
+    state.fixed.forEach(item => {
+      fixedHtml += `<div class="row" style="margin:12px 0; border-bottom:1px solid #eee; padding-bottom:8px;">
+        <div>
+          <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleFixed('${item.id}')">
+          <span style="${item.checked ? 'text-decoration:line-through; color:gray;' : ''}">${item.title}</span>
+        </div>
+        <b>${item.amount.toLocaleString()} ₽</b>
+      </div>`;
+    });
+    document.getElementById('fixedList').value = fixedHtml; // поправка ниже
+
+    // Рендер лимитов
+    let limitsHtml = '';
+    state.limits.forEach(item => {
+      limitsHtml += `<div style="margin:12px 0; border-bottom:1px solid #eee; padding-bottom:8px;">
+        <div class="row"><span><b>${item.title}</b></span> <span>${item.spent} / ${item.limit} ₽</span></div>
+        <button onclick="addSpent('${item.id}', 500)" style="margin-top:6px; background:#e0e0e0; color:#333; padding:4px 8px;">+500 ₽</button>
+      </div>`;
+    });
+    document.getElementById('limitsList').innerHTML = limitsHtml;
+    document.getElementById('fixedList').innerHTML = fixedHtml;
+  }
+
+  function toggleFixed(id) {
+    const item = state.fixed.find(i => i.id === id);
+    if (item) {
+      item.checked = !item.checked;
+      saveState();
+      render();
+    }
+  }
+
+  function addSpent(id, amount) {
+    const item = state.limits.find(i => i.id === id);
+    if (item) {
+      item.spent += amount;
+      saveState();
+      render();
+    }
+  }
+
+  function promptIncome() {
+    const val = prompt('Введи сумму дохода (ЗП / смена):', state.income);
+    if (val && !isNaN(val)) {
+      state.income = Number(val);
+      saveState();
+      render();
+    }
+  }
+
+  function addFixedItem() {
+    const title = prompt('Название платежа (например, Интернет):');
+    const amount = Number(prompt('Сумма в рублях:'));
+    if (title && amount) {
+      state.fixed.push({ id: Date.now().toString(), title, amount, checked: false });
+      saveState();
+      render();
+    }
+  }
+
+  loadState();
+</script>
+</body>
+</html>
