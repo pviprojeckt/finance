@@ -7,18 +7,17 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-main: #0b0f17;
-      --bg-card: #151c28;
-      --bg-card-hover: #1c2536;
-      --bg-glass: rgba(21, 28, 40, 0.78);
+      --bg-main: #090d16;
+      --bg-card: #131b2e;
+      --bg-card-alt: #19233c;
       --border: rgba(255, 255, 255, 0.08);
-      --text-main: #f3f6fc;
-      --text-muted: #8b9bb4;
-      --accent-blue: #3b82f6;
-      --accent-indigo: #6366f1;
-      --accent-green: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --blue: #3b82f6;
+      --indigo: #6366f1;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
     }
 
     * {
@@ -27,13 +26,19 @@
       user-select: none;
     }
 
-    /* Жесткая блокировка свайпа/сворачивания приложения */
+    input, textarea {
+      user-select: text;
+    }
+
+    /* Полная блокировка закрытия аппа при вертикальном скролле */
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100vh;
       overflow: hidden;
+      position: fixed;
+      inset: 0;
       background-color: var(--bg-main);
       color: var(--text-main);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
@@ -41,24 +46,26 @@
 
     .app-scroll {
       height: 100vh;
+      width: 100%;
       overflow-y: auto;
       overflow-x: hidden;
       overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
-      padding: 16px 16px 96px 16px;
+      padding: 14px 14px 110px 14px;
     }
 
     .container {
-      max-width: 460px;
+      max-width: 480px;
       margin: 0 auto;
     }
 
-    /* Верхняя шапка */
+    /* ВЕРХНЯЯ ПАНЕЛЬ */
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+      gap: 8px;
     }
 
     .brand {
@@ -67,205 +74,233 @@
       gap: 10px;
     }
 
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+      font-size: 19px;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
     }
 
-    .brand-title {
-      font-weight: 700;
+    .brand-name {
+      font-weight: 800;
       font-size: 16px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .pro-badge {
+    .badge-pro {
       font-size: 10px;
       padding: 2px 6px;
       border-radius: 6px;
-      background: rgba(16, 185, 129, 0.16);
-      color: var(--accent-green);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.18);
+      color: var(--green);
+      border: 1px solid rgba(16, 185, 129, 0.35);
       font-weight: 800;
-      letter-spacing: 0.5px;
     }
 
-    .cloud-pill {
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cloud-badge {
       font-size: 11px;
       color: var(--text-muted);
       background: var(--bg-card);
       border: 1px solid var(--border);
       padding: 6px 10px;
       border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .icon-btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ВЕРХНЯЯ ПЛАШКА ЗП И СМЕН */
+    .salary-strip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .salary-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      cursor: pointer;
+    }
+
+    .salary-label {
+      font-size: 11px;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 5px;
     }
 
-    /* Главная карточка Safe-to-Spend */
+    .salary-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .salary-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-sm-primary {
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-sm-edit {
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 9px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* ГЛАВНАЯ КАРТОЧКА SAFE-TO-SPEND */
     .hero-card {
       position: relative;
       background: linear-gradient(135deg, #1e3a8a 0%, #312e81 55%, #0f172a 100%);
       border-radius: 22px;
-      padding: 22px 20px;
-      margin-bottom: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      padding: 20px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
       overflow: hidden;
-    }
-
-    .hero-card::after {
-      content: "";
-      position: absolute;
-      top: -40px;
-      right: -40px;
-      width: 150px;
-      height: 150px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, transparent 70%);
-      pointer-events: none;
     }
 
     .hero-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.75);
-      margin-bottom: 6px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.78);
+      font-weight: 600;
+      letter-spacing: 0.4px;
     }
 
-    .days-badge {
-      background: rgba(255, 255, 255, 0.12);
+    .days-pill {
+      background: rgba(255, 255, 255, 0.14);
       padding: 4px 10px;
       border-radius: 12px;
-      font-weight: 600;
       font-size: 11px;
+      cursor: pointer;
     }
 
-    .hero-amount {
+    .hero-main-val {
       font-size: 36px;
-      font-weight: 800;
+      font-weight: 900;
+      margin: 6px 0 4px 0;
       letter-spacing: -0.5px;
-      margin: 4px 0 6px 0;
     }
 
     .hero-sub {
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 18px;
+      color: rgba(255, 255, 255, 0.78);
+      margin-bottom: 16px;
     }
 
-    .hero-metrics {
+    .hero-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      background: rgba(11, 15, 23, 0.45);
-      padding: 12px;
+      background: rgba(9, 13, 22, 0.52);
+      padding: 11px;
       border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .metric-box {
+    .hero-stat {
       display: flex;
       flex-direction: column;
       gap: 3px;
+      cursor: pointer;
     }
 
-    .metric-label {
+    .hero-stat-label {
       font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.4px;
     }
 
-    .metric-val {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    /* Панель быстрых действий */
-    .actions-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-indigo));
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      padding: 13px 14px;
-      font-weight: 700;
+    .hero-stat-val {
       font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25);
+      font-weight: 800;
     }
 
-    .btn-secondary {
-      background: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 13px 14px;
-      font-weight: 600;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-
-    .btn-primary:active, .btn-secondary:active {
-      transform: scale(0.98);
-    }
-
-    /* Навигация по вкладкам */
+    /* НАВИГАЦИЯ ПО 4 ВКЛАДКАМ */
     .tabs {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
       background: var(--bg-card);
       padding: 4px;
       border-radius: 14px;
       border: 1px solid var(--border);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .tab {
-      flex: 1;
       text-align: center;
-      padding: 10px 6px;
-      font-size: 13px;
-      font-weight: 600;
+      padding: 9px 4px;
+      font-size: 12px;
+      font-weight: 700;
       color: var(--text-muted);
       border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.18s;
+      white-space: nowrap;
     }
 
     .tab.active {
-      background: rgba(59, 130, 246, 0.18);
+      background: rgba(59, 130, 246, 0.2);
       color: #fff;
-      border: 1px solid rgba(59, 130, 246, 0.35);
+      border: 1px solid rgba(59, 130, 246, 0.4);
     }
 
     .section { display: none; }
     .section.active { display: block; }
 
-    /* Карточки */
+    /* КАРТОЧКИ */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -274,47 +309,56 @@
       margin-bottom: 14px;
     }
 
-    .card-header {
+    .card-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+      gap: 8px;
     }
 
     .card-title {
       font-size: 15px;
-      font-weight: 700;
+      font-weight: 800;
       margin: 0;
     }
 
-    /* Полоса распределения бюджета */
+    .btn-outline {
+      background: var(--bg-card-alt);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 11px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* СТРУКТУРА БЮДЖЕТА И ПОЛОСА */
     .alloc-bar {
-      height: 10px;
-      border-radius: 6px;
-      background: #0b0f17;
+      height: 12px;
+      border-radius: 8px;
+      background: #090d16;
       display: flex;
       overflow: hidden;
-      margin: 12px 0;
+      margin: 10px 0 14px 0;
       gap: 2px;
     }
 
-    .alloc-seg { height: 100%; transition: width 0.3s ease; }
+    .alloc-seg { height: 100%; transition: width 0.25s ease; }
 
     .legend-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 8px;
     }
 
-    .legend-item {
+    .legend-box {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      cursor: pointer;
     }
 
     .legend-top {
@@ -323,44 +367,39 @@
       gap: 6px;
       font-size: 11px;
       color: var(--text-muted);
+      margin-bottom: 4px;
     }
 
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .legend-val { font-size: 15px; font-weight: 800; }
 
-    .legend-val {
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    /* Список обязательных платежей */
-    .expense-item {
+    /* ЭЛЕМЕНТЫ СПИСКА ОБЯЗАТЕЛЬНЫХ СЧЕТОВ */
+    .item-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 12px;
       border-radius: 14px;
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.025);
       border: 1px solid var(--border);
       margin-bottom: 8px;
-      transition: all 0.2s;
+      gap: 8px;
     }
 
-    .expense-item.paid {
-      opacity: 0.55;
-      border-color: rgba(16, 185, 129, 0.25);
+    .item-row.paid {
+      opacity: 0.6;
+      border-color: rgba(16, 185, 129, 0.3);
     }
 
-    .expense-left {
+    .item-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      flex: 1;
+      cursor: pointer;
     }
 
-    .check-circle {
+    .checkbox-ui {
       width: 24px;
       height: 24px;
       border-radius: 8px;
@@ -368,60 +407,61 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
       font-size: 13px;
       color: transparent;
+      flex-shrink: 0;
     }
 
-    .expense-item.paid .check-circle {
-      background: var(--accent-green);
-      border-color: var(--accent-green);
-      color: #0b0f17;
+    .item-row.paid .checkbox-ui {
+      background: var(--green);
+      border-color: var(--green);
+      color: #090d16;
       font-weight: 900;
     }
 
-    .expense-title {
-      font-size: 14px;
-      font-weight: 600;
-    }
+    .item-title { font-size: 14px; font-weight: 700; }
+    .item-row.paid .item-title { text-decoration: line-through; }
+    .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
-    .expense-item.paid .expense-title {
-      text-decoration: line-through;
-    }
-
-    .expense-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .expense-right {
+    .item-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
     }
 
-    .del-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 16px;
-      cursor: pointer;
-      padding: 4px;
+    .item-amount {
+      font-size: 14px;
+      font-weight: 800;
+      margin-right: 4px;
+      white-space: nowrap;
     }
 
-    /* Лимиты с прогресс-барами */
-    .limit-card {
-      background: rgba(255, 255, 255, 0.02);
+    .mini-act-btn {
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      color: var(--text-main);
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* КАРТОЧКИ ЛИМИТОВ */
+    .limit-box {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border);
+      border-radius: 15px;
       padding: 14px;
       margin-bottom: 10px;
     }
 
-    .progress-track {
+    .progress-bar {
       height: 8px;
-      background: #0b0f17;
+      background: #090d16;
       border-radius: 6px;
       overflow: hidden;
       margin: 10px 0;
@@ -430,55 +470,93 @@
     .progress-fill {
       height: 100%;
       border-radius: 6px;
-      transition: width 0.3s ease;
+      transition: width 0.25s ease;
     }
 
-    .quick-chips {
-      display: flex;
+    .chips-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       gap: 6px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
-    .chip {
-      flex: 1;
+    .chip-btn {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
       color: var(--text-main);
       padding: 7px 0;
       border-radius: 9px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .chip:active {
-      background: rgba(59, 130, 246, 0.25);
+    .chip-btn:active { background: rgba(59, 130, 246, 0.3); }
+
+    /* ИНТЕРАКТИВНЫЕ ПОЛЗУНКИ (ПЛАНИРОВЩИК) */
+    .slider-group {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
     }
 
-    /* Модальные окна */
+    .slider-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #090d16;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    /* МОДАЛЬНЫЕ ШТОРКИ */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.76);
+      backdrop-filter: blur(5px);
       display: none;
       align-items: flex-end;
       justify-content: center;
-      z-index: 100;
+      z-index: 200;
     }
 
-    .modal-backdrop.open {
-      display: flex;
-    }
+    .modal-backdrop.open { display: flex; }
 
     .modal-sheet {
       width: 100%;
-      max-width: 460px;
+      max-width: 480px;
+      max-height: 88vh;
+      overflow-y: auto;
       background: var(--bg-card);
-      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 24px 24px 0 0;
-      padding: 22px 20px 30px 20px;
-      animation: slideUp 0.22s ease-out;
+      padding: 20px 18px 30px 18px;
+      animation: slideUp 0.2s ease-out;
     }
 
     @keyframes slideUp {
@@ -489,36 +567,59 @@
     .field-label {
       font-size: 12px;
       color: var(--text-muted);
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       display: block;
     }
 
-    .input-field {
+    .inp {
       width: 100%;
-      background: #0b0f17;
+      background: #090d16;
       border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 12px 14px;
+      padding: 12px;
       border-radius: 12px;
       font-size: 15px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       outline: none;
     }
 
-    .input-field:focus {
-      border-color: var(--accent-blue);
+    .inp:focus { border-color: var(--blue); }
+
+    .modal-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
     }
 
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+    .btn-full {
+      padding: 13px;
       border-radius: 12px;
-      margin-bottom: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .toggle-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      margin-bottom: 12px;
       font-size: 13px;
+    }
+
+    /* ИСТОРИЯ ОПЕРАЦИЙ */
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
     }
   </style>
 </head>
@@ -526,202 +627,295 @@
 
 <div class="app-scroll" id="scrollContainer">
   <div class="container">
-    
-    <!-- Шапка -->
+
+    <!-- ШАПКА -->
     <div class="topbar">
       <div class="brand">
-        <div class="brand-icon">💎</div>
-        <div class="brand-title">
-          FinShift <span class="pro-badge">PRO</span>
-        </div>
+        <div class="brand-logo">💎</div>
+        <div class="brand-name">FinShift <span class="badge-pro">PRO</span></div>
       </div>
-      <div class="cloud-pill" id="syncStatus">☁️ Синхронизировано</div>
+      <div class="top-actions">
+        <div class="cloud-badge" id="syncStatus">☁️ Синхр.</div>
+        <button class="icon-btn" onclick="openDevModal()" title="Код и экспорт в бота">&lt;/&gt;</button>
+      </div>
     </div>
 
-    <!-- Главный экран Safe-to-Spend -->
+    <!-- ПЛАШКА ЗП И СМЕН (Из твоего бота) -->
+    <div class="salary-strip">
+      <div class="salary-info" onclick="openEditTotalIncomeModal()">
+        <span class="salary-label">Месячный приход (ЗП + % + чай) ✏️</span>
+        <span class="salary-val" id="topSalaryVal">85 000 ₽</span>
+      </div>
+      <div class="salary-btns">
+        <button class="btn-sm-edit" onclick="openEditTotalIncomeModal()" title="Изменить общий доход">✏️</button>
+        <button class="btn-sm-primary" onclick="openShiftModal()">+ Смена / ЗП</button>
+      </div>
+    </div>
+
+    <!-- ГЛАВНЫЙ ЭКРАН SAFE-TO-SPEND -->
     <div class="hero-card">
       <div class="hero-top">
-        <span>МОЖНО ПОТРАТИТЬ СЕГОДНЯ</span>
-        <span class="days-badge" id="daysLeftBadge">Осталось 15 дн.</span>
+        <span>БЕЗОПАСНЫЙ ЛИМИТ НА СЕГОДНЯ</span>
+        <span class="days-pill" id="daysPill" onclick="openSavingsModal()">Осталось 15 дн.</span>
       </div>
-      <div class="hero-amount" id="safeDailyAmount">0 ₽</div>
-      <div class="hero-sub" id="freePoolSub">Свободный остаток на месяц: 0 ₽</div>
+      <div class="hero-main-val" id="safeDailyVal">0 ₽</div>
+      <div class="hero-sub" id="freeMonthlySub">Свободный пул на месяц: 0 ₽</div>
 
-      <div class="hero-metrics">
-        <div class="metric-box">
-          <span class="metric-label">Доход за мес.</span>
-          <span class="metric-val" id="metricIncome">0 ₽</span>
+      <div class="hero-grid">
+        <div class="hero-stat" onclick="switchTab('fixed', document.querySelectorAll('.tab')[1])">
+          <span class="hero-stat-label">В резерве счетов</span>
+          <span class="hero-stat-val" id="heroReserved" style="color:#93c5fd;">0 ₽</span>
         </div>
-        <div class="metric-box">
-          <span class="metric-label">В резерве</span>
-          <span class="metric-val" id="metricReserved" style="color: #93c5fd;">0 ₽</span>
+        <div class="hero-stat" onclick="switchTab('limits', document.querySelectorAll('.tab')[2])">
+          <span class="hero-stat-label">Остаток лимитов</span>
+          <span class="hero-stat-val" id="heroLimitsLeft" style="color:#fcd34d;">0 ₽</span>
         </div>
-        <div class="metric-box">
-          <span class="metric-label">Копилка (<span id="goalPctLabel">20</span>%)</span>
-          <span class="metric-val" id="metricSaved" style="color: var(--accent-green);">0 ₽</span>
+        <div class="hero-stat" onclick="openSavingsModal()">
+          <span class="hero-stat-label">Копилка (<span id="heroPct">20</span>%) ✏️</span>
+          <span class="hero-stat-val" id="heroSaved" style="color:var(--green);">0 ₽</span>
         </div>
       </div>
     </div>
 
-    <!-- Кнопки действий -->
-    <div class="actions-row">
-      <button class="btn-primary" onclick="openIncomeModal()">➕ Смена / Доход</button>
-      <button class="btn-secondary" onclick="openSavingsModal()">🎯 Цель копилки</button>
-    </div>
-
-    <!-- Вкладки -->
+    <!-- 4 ВКЛАДКИ -->
     <div class="tabs">
       <div class="tab active" onclick="switchTab('overview', this)">Обзор</div>
       <div class="tab" onclick="switchTab('fixed', this)">Обязательные</div>
       <div class="tab" onclick="switchTab('limits', this)">Лимиты</div>
+      <div class="tab" onclick="switchTab('sliders', this)">🎚 Ползунки</div>
     </div>
 
     <!-- ВКЛАДКА 1: ОБЗОР -->
     <div id="tab-overview" class="section active">
       <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Анатомия твоего бюджета</h3>
-          <span style="font-size:12px; color:var(--text-muted);" id="savedStatusBadge">Норма 20%</span>
+        <div class="card-head">
+          <h3 class="card-title">Распределение бюджета</h3>
+          <button class="btn-outline" onclick="openSavingsModal()">🎯 Копилка ✏️</button>
         </div>
 
         <div class="alloc-bar">
-          <div class="alloc-seg" id="barFixed" style="background: var(--accent-blue); width: 30%;"></div>
-          <div class="alloc-seg" id="barLimits" style="background: var(--accent-amber); width: 25%;"></div>
-          <div class="alloc-seg" id="barSavings" style="background: var(--accent-green); width: 20%;"></div>
-          <div class="alloc-seg" id="barFree" style="background: var(--accent-indigo); width: 25%;"></div>
+          <div class="alloc-seg" id="barFixed" style="background:var(--blue); width:25%"></div>
+          <div class="alloc-seg" id="barLimits" style="background:var(--amber); width:25%"></div>
+          <div class="alloc-seg" id="barSavings" style="background:var(--green); width:20%"></div>
+          <div class="alloc-seg" id="barFree" style="background:var(--indigo); width:30%"></div>
         </div>
 
         <div class="legend-grid">
-          <div class="legend-item">
-            <div class="legend-top"><span class="dot" style="background:var(--accent-blue)"></span>Обязательные счета</div>
+          <div class="legend-box" onclick="switchTab('fixed', document.querySelectorAll('.tab')[1])">
+            <div class="legend-top"><span class="dot" style="background:var(--blue)"></span>Обязательные (Фикс)</div>
             <div class="legend-val" id="legFixed">0 ₽</div>
           </div>
-          <div class="legend-item">
-            <div class="legend-top"><span class="dot" style="background:var(--accent-amber)"></span>Базовые лимиты</div>
+          <div class="legend-box" onclick="switchTab('limits', document.querySelectorAll('.tab')[2])">
+            <div class="legend-top"><span class="dot" style="background:var(--amber)"></span>Базовые лимиты</div>
             <div class="legend-val" id="legLimits">0 ₽</div>
           </div>
-          <div class="legend-item">
-            <div class="legend-top"><span class="dot" style="background:var(--accent-green)"></span>Отложено в копилку</div>
-            <div class="legend-val" id="legSavings" style="color:var(--accent-green)">0 ₽</div>
+          <div class="legend-box" onclick="openSavingsModal()">
+            <div class="legend-top"><span class="dot" style="background:var(--green)"></span>Отложено в копилку ✏️</div>
+            <div class="legend-val" id="legSavings" style="color:var(--green)">0 ₽</div>
           </div>
-          <div class="legend-item">
-            <div class="legend-top"><span class="dot" style="background:var(--accent-indigo)"></span>Свободные деньги</div>
+          <div class="legend-box" onclick="switchTab('sliders', document.querySelectorAll('.tab')[3])">
+            <div class="legend-top"><span class="dot" style="background:var(--indigo)"></span>Чистый профицит</div>
             <div class="legend-val" id="legFree">0 ₽</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Ближайшие счета к оплате</h3>
+        <div class="card-head">
+          <h3 class="card-title">Неоплаченные счета в этом месяце</h3>
+          <button class="btn-outline" onclick="openFixedModal()">+ Счет</button>
         </div>
-        <div id="upcomingBillsList"></div>
+        <div id="overviewUnpaidList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3 class="card-title">Последние операции</h3>
+          <button class="btn-outline" onclick="clearHistory()">Очистить</button>
+        </div>
+        <div id="historyList"></div>
       </div>
     </div>
 
     <!-- ВКЛАДКА 2: ОБЯЗАТЕЛЬНЫЕ РАСХОДЫ -->
     <div id="tab-fixed" class="section">
       <div class="card">
-        <div class="card-header">
+        <div class="card-head">
           <h3 class="card-title">Фиксированные платежи</h3>
-          <button class="btn-secondary" style="padding:6px 12px; font-size:12px;" onclick="openAddFixedModal()">+ Добавить</button>
+          <button class="btn-sm-primary" onclick="openFixedModal()">+ Добавить счет</button>
         </div>
-        <div id="fixedExpensesList"></div>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
+          Нажми на галочку, когда оплатишь счет, или на ✏️, чтобы изменить название, сумму и дату.
+        </p>
+        <div id="fixedListContainer"></div>
       </div>
     </div>
 
     <!-- ВКЛАДКА 3: ЛИМИТЫ -->
     <div id="tab-limits" class="section">
       <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Базовые переменные траты</h3>
-          <button class="btn-secondary" style="padding:6px 12px; font-size:12px;" onclick="openAddLimitModal()">+ Категория</button>
+        <div class="card-head">
+          <h3 class="card-title">Переменные лимиты</h3>
+          <button class="btn-sm-primary" onclick="openLimitModal()">+ Категория</button>
         </div>
-        <div id="variableLimitsList"></div>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
+          Быстро списывай траты кнопками или нажми ✏️ для редактирования лимита и потраченной суммы.
+        </p>
+        <div id="limitsListContainer"></div>
+      </div>
+    </div>
+
+    <!-- ВКЛАДКА 4: ИНТЕРАКТИВНЫЕ ПОЛЗУНКИ (ПЛАНИРОВЩИК) -->
+    <div id="tab-sliders" class="section">
+      <div class="card">
+        <div class="card-head">
+          <h3 class="card-title">Планировщик бюджета</h3>
+          <span style="font-size:12px; color:var(--green); font-weight:700;" id="sliderSavingsRate">Норма: 20%</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
+          Двигай ползунки, чтобы мгновенно менять свой доход, процент копилки и суммы всех категорий.
+        </p>
+        <div id="slidersDynamicContainer"></div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- МОДАЛКА: ДОБАВИТЬ ДОХОД / СМЕНУ -->
-<div class="modal-backdrop" id="modalIncome">
+<!-- МОДАЛКА 1: ДОБАВИТЬ СМЕНУ / ПРИХОД -->
+<div class="modal-backdrop" id="modalShift">
   <div class="modal-sheet">
-    <h3 style="margin:0 0 14px 0;">Внести доход со смены / ЗП</h3>
+    <h3 style="margin:0 0 12px 0;">➕ Внести смену / чаевые / аванс</h3>
     <label class="field-label">Сумма прихода (₽)</label>
-    <input type="number" id="inpIncomeAmount" class="input-field" placeholder="Например: 4500">
-    
-    <div class="toggle-row">
-      <span>Сразу отложить <b id="modalAutoSavePct">20%</b> в копилку</span>
-      <input type="checkbox" id="chkAutoSave" checked style="width:20px; height:20px;">
+    <input type="number" id="inpShiftSum" class="inp" placeholder="Например: 5200">
+
+    <label class="field-label">Комментарий (необязательно)</label>
+    <input type="text" id="inpShiftNote" class="inp" placeholder="Смена пятница + чай">
+
+    <div class="toggle-box">
+      <span>Сразу отложить <b id="shiftAutoPct">20%</b> в копилку</span>
+      <input type="checkbox" id="chkShiftAutoSave" checked style="width:20px; height:20px;">
     </div>
 
-    <div class="actions-row" style="margin-bottom:0;">
-      <button class="btn-secondary" onclick="closeModals()">Отмена</button>
-      <button class="btn-primary" onclick="submitIncome()">Зачислить</button>
-    </div>
-    <div style="margin-top:12px; text-align:center;">
-      <span style="font-size:12px; color:var(--text-muted); cursor:pointer; text-decoration:underline;" onclick="setExactTotalIncome()">Или задать общую сумму дохода за месяц вручную</span>
+    <div class="modal-btns">
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
+      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveShiftIncome()">Зачислить</button>
     </div>
   </div>
 </div>
 
-<!-- МОДАЛКА: ДОБАВИТЬ ОБЯЗАТЕЛЬНЫЙ ПЛАТЕЖ -->
+<!-- МОДАЛКА 2: РЕДАКТИРОВАТЬ ОБЩИЙ ДОХОД ЗА МЕСЯЦ -->
+<div class="modal-backdrop" id="modalTotalIncome">
+  <div class="modal-sheet">
+    <h3 style="margin:0 0 12px 0;">✏️ Редактировать месячный доход</h3>
+    <label class="field-label">Общий доход за месяц (ЗП + % + чаевые), ₽</label>
+    <input type="number" id="inpTotalIncome" class="inp" placeholder="85000">
+
+    <div class="modal-btns">
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
+      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveTotalIncome()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА 3: ДОБАВИТЬ / РЕДАКТИРОВАТЬ ОБЯЗАТЕЛЬНЫЙ СЧЕТ -->
 <div class="modal-backdrop" id="modalFixed">
   <div class="modal-sheet">
-    <h3 style="margin:0 0 14px 0;">Новый обязательный платеж</h3>
-    <label class="field-label">Название (Аренда, Интернет, Кредит)</label>
-    <input type="text" id="inpFixedTitle" class="input-field" placeholder="Например: Оплата квартиры">
-    
+    <h3 style="margin:0 0 12px 0;" id="modalFixedHeader">Обязательный платеж</h3>
+    <input type="hidden" id="inpFixedId">
+
+    <label class="field-label">Название платежа</label>
+    <input type="text" id="inpFixedTitle" class="inp" placeholder="Аренда / ЖКХ / Интернет">
+
     <label class="field-label">Сумма (₽)</label>
-    <input type="number" id="inpFixedAmount" class="input-field" placeholder="25000">
+    <input type="number" id="inpFixedAmount" class="inp" placeholder="25000">
 
-    <label class="field-label">Число месяца для оплаты (1–31)</label>
-    <input type="number" id="inpFixedDay" class="input-field" placeholder="5" value="10">
+    <label class="field-label">День оплаты в месяце (1–31)</label>
+    <input type="number" id="inpFixedDay" class="inp" placeholder="5">
 
-    <div class="actions-row" style="margin-bottom:0;">
-      <button class="btn-secondary" onclick="closeModals()">Отмена</button>
-      <button class="btn-primary" onclick="submitNewFixed()">Сохранить</button>
+    <div class="modal-btns">
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
+      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveFixedModal()">Сохранить</button>
     </div>
   </div>
 </div>
 
-<!-- МОДАЛКА: НАСТРОЙКА КОПИЛКИ -->
-<div class="modal-backdrop" id="modalSavings">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 14px 0;">Настройка копилки</h3>
-    <label class="field-label">Целевой процент сбережений (% от дохода)</label>
-    <input type="number" id="inpSavingsPct" class="input-field" placeholder="20">
-
-    <label class="field-label">Уже фактически отложено в этом месяце (₽)</label>
-    <input type="number" id="inpActualSaved" class="input-field" placeholder="17000">
-
-    <div class="actions-row" style="margin-bottom:0;">
-      <button class="btn-secondary" onclick="closeModals()">Отмена</button>
-      <button class="btn-primary" onclick="submitSavingsConfig()">Обновить</button>
-    </div>
-  </div>
-</div>
-
-<!-- МОДАЛКА: НОВЫЙ ЛИМИТ -->
+<!-- МОДАЛКА 4: ДОБАВИТЬ / РЕДАКТИРОВАТЬ КАТЕГОРИЮ ЛИМИТА -->
 <div class="modal-backdrop" id="modalLimit">
   <div class="modal-sheet">
-    <h3 style="margin:0 0 14px 0;">Новая категория лимита</h3>
-    <label class="field-label">Название категории</label>
-    <input type="text" id="inpLimitTitle" class="input-field" placeholder="Например: Такси со смен">
-    
-    <label class="field-label">Месячный лимит (₽)</label>
-    <input type="number" id="inpLimitMax" class="input-field" placeholder="5000">
+    <h3 style="margin:0 0 12px 0;" id="modalLimitHeader">Категория лимита</h3>
+    <input type="hidden" id="inpLimitId">
 
-    <div class="actions-row" style="margin-bottom:0;">
-      <button class="btn-secondary" onclick="closeModals()">Отмена</button>
-      <button class="btn-primary" onclick="submitNewLimit()">Создать</button>
+    <label class="field-label">Название категории</label>
+    <input type="text" id="inpLimitTitle" class="inp" placeholder="Продукты / Спортпит / Такси">
+
+    <label class="field-label">Лимит на месяц (₽)</label>
+    <input type="number" id="inpLimitMax" class="inp" placeholder="18000">
+
+    <label class="field-label">Уже потрачено в этом месяце (₽)</label>
+    <input type="number" id="inpLimitSpent" class="inp" placeholder="0">
+
+    <div class="modal-btns">
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
+      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveLimitModal()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА 5: НАСТРОЙКА КОПИЛКИ -->
+<div class="modal-backdrop" id="modalSavings">
+  <div class="modal-sheet">
+    <h3 style="margin:0 0 12px 0;">🎯 Настройка копилки</h3>
+    <label class="field-label">Целевой % сбережений от дохода</label>
+    <input type="number" id="inpSavingsPct" class="inp" placeholder="20">
+
+    <label class="field-label">Фактически отложено на счет в этом месяце (₽)</label>
+    <input type="number" id="inpActualSaved" class="inp" placeholder="17000">
+
+    <div class="modal-btns">
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
+      <button class="btn-full" style="background:var(--green); color:#090d16;" onclick="saveSavingsModal()">Обновить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА 6: СВОЯ СУММА СПИСАНИЯ ПО ЛИМИТУ -->
+<div class="modal-backdrop" id="modalSpendCustom">
+  <div class="modal-sheet">
+    <h3 style="margin:0 0 12px 0;" id="spendCustomTitle">Списать сумму</h3>
+    <input type="hidden" id="inpSpendLimitId">
+    <label class="field-label">Сумма расхода в ₽ (можно с минусом, чтобы отменить)</label>
+    <input type="number" id="inpSpendCustomVal" class="inp" placeholder="Например: 750">
+
+    <div class="modal-btns">
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
+      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="confirmCustomSpend()">Провести</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА 7: DEV / JSON / ОТПРАВКА В БОТА -->
+<div class="modal-backdrop" id="modalDev">
+  <div class="modal-sheet">
+    <h3 style="margin:0 0 8px 0;">&lt;/&gt; Синхронизация и JSON-стейт</h3>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
+      Telegram User ID: <b id="devUserIdLabel">...</b>
+    </p>
+    <textarea id="devJsonArea" class="inp" style="height:150px; font-family:monospace; font-size:11px;" readonly></textarea>
+    
+    <div class="modal-btns" style="margin-bottom:8px;">
+      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="sendDataToTelegramBot()">📤 Отправить в бота</button>
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="copyJsonState()">📋 Скопировать JSON</button>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-full" style="background:rgba(239,68,68,0.2); color:var(--red);" onclick="resetDefaultState()">Сбросить всё</button>
+      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Закрыть</button>
     </div>
   </div>
 </div>
 
 <script>
-  // 1. Инициализация Telegram WebApp + защита от сворачивания при скролле
+  // 1. ЖЕСТКАЯ ЗАЩИТА ОТ СВОРАЧИВАНИЯ ПРИ СКРОЛЛЕ В TELEGRAM
   const tg = window.Telegram?.WebApp;
   if (tg) {
     tg.ready();
@@ -731,49 +925,81 @@
     }
   }
 
+  // Блокируем передачу свайпа вниз самому клиенту Telegram на границе скролла
+  const scroller = document.getElementById('scrollContainer');
+  let touchStartY = 0;
+  scroller.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  scroller.addEventListener('touchmove', (e) => {
+    const currentY = e.touches[0].clientY;
+    const isPullingDown = currentY > touchStartY;
+    if (scroller.scrollTop <= 0 && isPullingDown) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
   const USER_ID = tg?.initDataUnsafe?.user?.id || 'dev_user_test';
 
   // Дефолтный стейт
-  let state = {
+  const DEFAULT_STATE = {
     income: 85000,
     savingsGoalPct: 20,
     actualSaved: 17000,
     fixed: [
-      { id: 'f1', title: 'Аренда жилья', amount: 25000, day: 5, paid: false },
-      { id: 'f2', title: 'Домашний интернет и связь', amount: 1500, day: 12, paid: true },
-      { id: 'f3', title: 'Серверы / Подписки', amount: 500, day: 20, paid: false }
+      { id: 'f1', title: 'Аренда квартиры', amount: 25000, day: 5, paid: false },
+      { id: 'f2', title: 'ЖКХ, интернет, связь', amount: 3500, day: 10, paid: true },
+      { id: 'f3', title: 'VPS Сервер / Подписки', amount: 1500, day: 15, paid: false }
     ],
     limits: [
       { id: 'l1', title: 'Продукты и быт', limit: 18000, spent: 6400 },
-      { id: 'l2', title: 'Спортпит и здоровье', limit: 5000, spent: 1500 },
-      { id: 'l3', title: 'Транспорт / Такси', limit: 4000, spent: 1200 }
+      { id: 'l2', title: 'Спортпит и здоровье', limit: 4500, spent: 1500 },
+      { id: 'l3', title: 'Проезд / Такси со смен', limit: 4000, spent: 1200 }
+    ],
+    history: [
+      { title: 'Начальный баланс настроен', amount: 85000, type: 'plus', date: 'Сегодня' }
     ]
   };
 
-  // 2. Облачная синхронизация через /api/sync
-  let syncTimeout;
+  let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+  // 2. ОБЛАЧНАЯ СИНХРОНИЗАЦИЯ SUPABASE + РЕЗЕРВ В LOCALSTORAGE
+  let syncTimer;
   function saveState() {
-    const pill = document.getElementById('syncStatus');
-    pill.innerText = '⏳ Сохранение...';
-    clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(async () => {
+    try {
+      localStorage.setItem('finshift_backup_state', JSON.stringify(state));
+    } catch (e) {}
+
+    const badge = document.getElementById('syncStatus');
+    badge.innerText = '⏳ Сохранение...';
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(async () => {
       try {
         const res = await fetch('/api/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: USER_ID, state })
         });
-        if (!res.ok) throw new Error('Sync error');
-        pill.innerText = '☁️ Облако: ОК';
-      } catch (e) {
-        pill.innerText = '⚠️ Локально';
+        if (!res.ok) throw new Error('Cloud error');
+        badge.innerText = '☁️ Облако: ОК';
+      } catch (err) {
+        badge.innerText = '💾 Сохранено';
       }
     }, 350);
   }
 
   async function loadState() {
-    const pill = document.getElementById('syncStatus');
-    pill.innerText = '🔄 Загрузка...';
+    const badge = document.getElementById('syncStatus');
+    badge.innerText = '🔄 Загрузка...';
+
+    // Сначала читаем локальный бэкап для мгновенного отклика
+    try {
+      const local = localStorage.getItem('finshift_backup_state');
+      if (local) state = Object.assign({}, DEFAULT_STATE, JSON.parse(local));
+    } catch (e) {}
+
+    // Затем подтягиваем свежий стейт из облака Supabase
     try {
       const res = await fetch(`/api/sync?userId=${USER_ID}`);
       const data = await res.json();
@@ -782,163 +1008,348 @@
           income: Number(data.state.income ?? 85000),
           savingsGoalPct: Number(data.state.savingsGoalPct ?? 20),
           actualSaved: Number(data.state.actualSaved ?? 0),
-          fixed: Array.isArray(data.state.fixed) ? data.state.fixed : state.fixed,
-          limits: Array.isArray(data.state.limits) ? data.state.limits : state.limits
+          fixed: Array.isArray(data.state.fixed) ? data.state.fixed : DEFAULT_STATE.fixed,
+          limits: Array.isArray(data.state.limits) ? data.state.limits : DEFAULT_STATE.limits,
+          history: Array.isArray(data.state.history) ? data.state.history : []
         };
       }
-
-      // Если бот передал актуальную ЗП через ?income=
-      const params = new URLSearchParams(window.location.search);
-      const urlIncome = Number(params.get('income'));
-      if (urlIncome > 0 && state.income !== urlIncome) {
-        state.income = urlIncome;
-        saveState();
-      }
-      pill.innerText = '☁️ Облако: ОК';
+      badge.innerText = '☁️ Облако: ОК';
     } catch (e) {
-      pill.innerText = '⚠️ Автономно';
+      badge.innerText = '💾 Автономно';
     }
+
+    // Если бот передал ?income= в ссылке
+    const urlParams = new URLSearchParams(window.location.search);
+    const botIncome = Number(urlParams.get('income'));
+    if (botIncome > 0 && state.income !== botIncome) {
+      state.income = botIncome;
+      addLog('Синхронизация ЗП из бота', botIncome, 'plus');
+      saveState();
+    }
+
     render();
   }
 
-  // 3. Математика и рендер интерфейса
-  function getDaysRemaining() {
+  function addLog(title, amount, type = 'minus') {
     const now = new Date();
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    return Math.max(1, lastDay - now.getDate() + 1);
+    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    state.history = state.history || [];
+    state.history.unshift({ title, amount, type, date: timeStr });
+    if (state.history.length > 15) state.history.pop();
   }
 
-  function fmt(num) {
-    return Math.round(num).toLocaleString('ru-RU') + ' ₽';
+  function fmt(n) {
+    return Math.round(Number(n) || 0).toLocaleString('ru-RU') + ' ₽';
   }
 
+  function getDaysLeft() {
+    const d = new Date();
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    return Math.max(1, last - d.getDate() + 1);
+  }
+
+  // 3. ПОЛНЫЙ РЕНДЕР ВСЕХ ВКЛАДОК
   function render() {
-    const daysLeft = getDaysRemaining();
-    document.getElementById('daysLeftBadge').innerText = `Осталось ${daysLeft} дн.`;
+    const daysLeft = getDaysLeft();
+    document.getElementById('daysPill').innerText = `Осталось ${daysLeft} дн.`;
+    document.getElementById('topSalaryVal').innerText = fmt(state.income);
 
-    const totalFixed = state.fixed.reduce((s, i) => s + Number(i.amount), 0);
-    const unpaidFixed = state.fixed.filter(i => !i.paid).reduce((s, i) => s + Number(i.amount), 0);
-    const totalLimits = state.limits.reduce((s, i) => s + Number(i.limit), 0);
+    const totalFixed = state.fixed.reduce((acc, i) => acc + Number(i.amount), 0);
+    const unpaidFixed = state.fixed.filter(i => !i.paid).reduce((acc, i) => acc + Number(i.amount), 0);
+    const totalLimitsMax = state.limits.reduce((acc, i) => acc + Number(i.limit), 0);
+    const totalLimitsSpent = state.limits.reduce((acc, i) => acc + Number(i.spent), 0);
+    const limitsRemaining = Math.max(0, totalLimitsMax - totalLimitsSpent);
+
+    // Если по лимиту перерасход — учитываем фактическую трату
+    const effectiveLimitsCost = state.limits.reduce((acc, i) => acc + Math.max(Number(i.limit), Number(i.spent)), 0);
+
     const targetSavings = Math.round(state.income * (state.savingsGoalPct / 100));
-    const effectiveSavings = Math.max(targetSavings, state.actualSaved);
+    const effectiveSavings = Math.max(targetSavings, Number(state.actualSaved || 0));
 
-    // Свободный остаток после вычета ВСЕХ обязательных, лимитов и копилки
-    const freeMonthlyPool = state.income - totalFixed - totalLimits - effectiveSavings;
+    const freeMonthlyPool = state.income - totalFixed - effectiveLimitsCost - effectiveSavings;
     const safeDaily = Math.max(0, Math.floor(freeMonthlyPool / daysLeft));
 
-    document.getElementById('safeDailyAmount').innerText = fmt(safeDaily);
-    document.getElementById('safeDailyAmount').style.color = freeMonthlyPool < 0 ? 'var(--accent-red)' : '#ffffff';
-    document.getElementById('freePoolSub').innerText = freeMonthlyPool >= 0
-      ? `Свободный пул на месяц: ${fmt(freeMonthlyPool)}`
-      : `Дефицит бюджета: ${fmt(freeMonthlyPool)}`;
+    const safeEl = document.getElementById('safeDailyVal');
+    safeEl.innerText = fmt(safeDaily);
+    safeEl.style.color = freeMonthlyPool < 0 ? 'var(--red)' : '#ffffff';
 
-    document.getElementById('metricIncome').innerText = fmt(state.income);
-    document.getElementById('metricReserved').innerText = fmt(unpaidFixed);
-    document.getElementById('goalPctLabel').innerText = state.savingsGoalPct;
-    document.getElementById('metricSaved').innerText = fmt(effectiveSavings);
+    document.getElementById('freeMonthlySub').innerText = freeMonthlyPool >= 0
+      ? `Свободный остаток (профицит): ${fmt(freeMonthlyPool)}`
+      : `⚠️ Дефицит бюджета: ${fmt(freeMonthlyPool)}`;
+
+    document.getElementById('heroReserved').innerText = fmt(unpaidFixed);
+    document.getElementById('heroLimitsLeft').innerText = fmt(limitsRemaining);
+    document.getElementById('heroPct').innerText = state.savingsGoalPct;
+    document.getElementById('heroSaved').innerText = fmt(effectiveSavings);
 
     // Полоса распределения
     const base = Math.max(1, state.income);
     document.getElementById('barFixed').style.width = Math.min(100, (totalFixed / base) * 100) + '%';
-    document.getElementById('barLimits').style.width = Math.min(100, (totalLimits / base) * 100) + '%';
+    document.getElementById('barLimits').style.width = Math.min(100, (effectiveLimitsCost / base) * 100) + '%';
     document.getElementById('barSavings').style.width = Math.min(100, (effectiveSavings / base) * 100) + '%';
     document.getElementById('barFree').style.width = Math.max(0, (freeMonthlyPool / base) * 100) + '%';
 
     document.getElementById('legFixed').innerText = fmt(totalFixed);
-    document.getElementById('legLimits').innerText = fmt(totalLimits);
+    document.getElementById('legLimits').innerText = fmt(effectiveLimitsCost);
     document.getElementById('legSavings').innerText = fmt(effectiveSavings);
     document.getElementById('legFree').innerText = fmt(freeMonthlyPool);
 
-    // Ближайшие неоплаченные счета на вкладке Обзор
-    const unpaidList = state.fixed.filter(i => !i.paid);
-    const upContainer = document.getElementById('upcomingBillsList');
-    if (unpaidList.length === 0) {
-      upContainer.innerHTML = `<div style="color:var(--accent-green); font-size:13px; padding:6px 0;">🎉 Все обязательные счета в этом месяце оплачены!</div>`;
+    // 1. Вкладка Обзор: Неоплаченные счета
+    const unpaid = state.fixed.filter(i => !i.paid);
+    const unpaidBox = document.getElementById('overviewUnpaidList');
+    if (unpaid.length === 0) {
+      unpaidBox.innerHTML = `<div style="color:var(--green); font-size:13px; padding:6px 0;">✅ Все обязательные счета оплачены!</div>`;
     } else {
-      upContainer.innerHTML = unpaidList.map(item => `
-        <div class="expense-item" onclick="toggleFixed('${item.id}')">
-          <div class="expense-left">
-            <div class="check-circle">✓</div>
+      unpaidBox.innerHTML = unpaid.map(item => `
+        <div class="item-row">
+          <div class="item-left" onclick="toggleFixed('${item.id}')">
+            <div class="checkbox-ui">✓</div>
             <div>
-              <div class="expense-title">${item.title}</div>
-              <div class="expense-meta">Оплата до ${item.day || 10}-го числа</div>
+              <div class="item-title">${item.title}</div>
+              <div class="item-sub">Оплата до ${item.day || 10}-го числа</div>
             </div>
           </div>
-          <div class="expense-right">
-            <b>${fmt(item.amount)}</b>
+          <div class="item-right">
+            <span class="item-amount">${fmt(item.amount)}</span>
+            <button class="mini-act-btn" onclick="openFixedModal('${item.id}')" title="Редактировать">✏️</button>
           </div>
         </div>
       `).join('');
     }
 
-    // Полный список обязательных платежей
-    const fixedContainer = document.getElementById('fixedExpensesList');
-    fixedContainer.innerHTML = state.fixed.map(item => `
-      <div class="expense-item ${item.paid ? 'paid' : ''}">
-        <div class="expense-left" onclick="toggleFixed('${item.id}')" style="cursor:pointer; flex:1;">
-          <div class="check-circle">✓</div>
+    // История операций
+    const histBox = document.getElementById('historyList');
+    if (!state.history || state.history.length === 0) {
+      histBox.innerHTML = `<div style="color:var(--text-muted); font-size:12px;">Операций пока нет</div>`;
+    } else {
+      histBox.innerHTML = state.history.slice(0, 6).map(h => `
+        <div class="log-item">
+          <span>${h.title} <small style="color:var(--text-muted)">(${h.date})</small></span>
+          <b style="color:${h.type === 'plus' ? 'var(--green)' : 'var(--text-main)'}">
+            ${h.type === 'plus' ? '+' : '-'}${fmt(h.amount)}
+          </b>
+        </div>
+      `).join('');
+    }
+
+    // 2. Вкладка Обязательные платежи (с кнопками ✏️ и ✕)
+    const fixedBox = document.getElementById('fixedListContainer');
+    fixedBox.innerHTML = state.fixed.map(item => `
+      <div class="item-row ${item.paid ? 'paid' : ''}">
+        <div class="item-left" onclick="toggleFixed('${item.id}')">
+          <div class="checkbox-ui">✓</div>
           <div>
-            <div class="expense-title">${item.title}</div>
-            <div class="expense-meta">${item.paid ? 'Оплачено ✅' : `Ждет оплаты (${item.day || 10}-е число)`}</div>
+            <div class="item-title">${item.title}</div>
+            <div class="item-sub">${item.paid ? 'Оплачено ✅' : `Списание ${item.day || 10}-го числа`}</div>
           </div>
         </div>
-        <div class="expense-right">
-          <b>${fmt(item.amount)}</b>
-          <button class="del-btn" onclick="deleteFixed('${item.id}')">✕</button>
+        <div class="item-right">
+          <span class="item-amount">${fmt(item.amount)}</span>
+          <button class="mini-act-btn" onclick="openFixedModal('${item.id}')" title="Изменить">✏️</button>
+          <button class="mini-act-btn" onclick="deleteFixed('${item.id}')" title="Удалить">✕</button>
         </div>
       </div>
     `).join('');
 
-    // Лимиты
-    const limitsContainer = document.getElementById('variableLimitsList');
-    limitsContainer.innerHTML = state.limits.map(item => {
+    // 3. Вкладка Лимиты (с быстрыми чипами + редактированием ✏️)
+    const limitsBox = document.getElementById('limitsListContainer');
+    limitsBox.innerHTML = state.limits.map(item => {
       const pct = Math.min(100, Math.round((item.spent / Math.max(1, item.limit)) * 100));
-      const color = pct > 90 ? 'var(--accent-red)' : pct > 70 ? 'var(--accent-amber)' : 'var(--accent-green)';
-      const left = item.limit - item.spent;
+      const barColor = pct >= 100 ? 'var(--red)' : pct >= 75 ? 'var(--amber)' : 'var(--green)';
+      const rem = item.limit - item.spent;
       return `
-        <div class="limit-card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="limit-box">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
             <div>
-              <div style="font-weight:700; font-size:14px;">${item.title}</div>
+              <div style="font-weight:800; font-size:14px;">${item.title}</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
-                Осталось: <b style="color:${left < 0 ? 'var(--accent-red)' : 'var(--text-main)'}">${fmt(left)}</b>
+                ${rem >= 0 ? `Доступно: <b style="color:#fff">${fmt(rem)}</b>` : `<b style="color:var(--red)">Перерасход: ${fmt(Math.abs(rem))}</b>`}
               </div>
             </div>
-            <div style="text-align:right;">
-              <span style="font-size:13px; font-weight:700;">${fmt(item.spent)}</span>
-              <span style="font-size:12px; color:var(--text-muted);"> / ${fmt(item.limit)}</span>
-              <button class="del-btn" onclick="deleteLimit('${item.id}')">✕</button>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div style="text-align:right; margin-right:4px;">
+                <div style="font-size:13px; font-weight:800;">${fmt(item.spent)}</div>
+                <div style="font-size:11px; color:var(--text-muted);">из ${fmt(item.limit)}</div>
+              </div>
+              <button class="mini-act-btn" onclick="openLimitModal('${item.id}')" title="Редактировать">✏️</button>
+              <button class="mini-act-btn" onclick="deleteLimit('${item.id}')" title="Удалить">✕</button>
             </div>
           </div>
-          <div class="progress-track">
-            <div class="progress-fill" style="width:${pct}%; background:${color};"></div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${pct}%; background:${barColor};"></div>
           </div>
-          <div class="quick-chips">
-            <button class="chip" onclick="addLimitSpent('${item.id}', 300)">+300 ₽</button>
-            <button class="chip" onclick="addLimitSpent('${item.id}', 500)">+500 ₽</button>
-            <button class="chip" onclick="addLimitSpent('${item.id}', 1000)">+1000 ₽</button>
-            <button class="chip" onclick="customLimitSpent('${item.id}')">Своя</button>
+
+          <div class="chips-row">
+            <button class="chip-btn" onclick="quickSpend('${item.id}', 300)">+300</button>
+            <button class="chip-btn" onclick="quickSpend('${item.id}', 500)">+500</button>
+            <button class="chip-btn" onclick="quickSpend('${item.id}', 1000)">+1000</button>
+            <button class="chip-btn" onclick="quickSpend('${item.id}', -300)">-300</button>
+            <button class="chip-btn" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4);" onclick="openCustomSpendModal('${item.id}')">Своя</button>
           </div>
         </div>
       `;
     }).join('');
+
+    // 4. Вкладка Ползунки (Интерактивный планировщик из первого прототипа)
+    const totalOut = totalFixed + effectiveLimitsCost;
+    const realRate = state.income > 0 ? Math.max(0, Math.round(((state.income - totalOut) / state.income) * 100)) : 0;
+    document.getElementById('sliderSavingsRate').innerText = `Потенциал копилки: ${realRate}%`;
+
+    let slidersHtml = `
+      <div class="slider-group">
+        <div class="slider-top">
+          <span>💰 Месячный доход</span>
+          <span style="color:var(--green)">${fmt(state.income)}</span>
+        </div>
+        <input type="range" min="15000" max="300000" step="1000" value="${state.income}"
+          oninput="updateIncomeSlider(this.value)">
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-top">
+          <span>🎯 Процент в копилку</span>
+          <span style="color:var(--green)">${state.savingsGoalPct}% (${fmt(targetSavings)})</span>
+        </div>
+        <input type="range" min="0" max="60" step="1" value="${state.savingsGoalPct}"
+          oninput="updateSavingsPctSlider(this.value)">
+      </div>
+    `;
+
+    state.fixed.forEach(item => {
+      slidersHtml += `
+        <div class="slider-group">
+          <div class="slider-top">
+            <span>📌 ${item.title}</span>
+            <span style="color:#93c5fd">${fmt(item.amount)}</span>
+          </div>
+          <input type="range" min="0" max="100000" step="500" value="${item.amount}"
+            oninput="updateFixedSlider('${item.id}', this.value)">
+        </div>
+      `;
+    });
+
+    state.limits.forEach(item => {
+      slidersHtml += `
+        <div class="slider-group">
+          <div class="slider-top">
+            <span>🛒 Лимит: ${item.title}</span>
+            <span style="color:#fcd34d">${fmt(item.limit)}</span>
+          </div>
+          <input type="range" min="0" max="80000" step="500" value="${item.limit}"
+            oninput="updateLimitSlider('${item.id}', this.value)">
+        </div>
+      `;
+    });
+
+    document.getElementById('slidersDynamicContainer').innerHTML = slidersHtml;
   }
 
-  // 4. Интерактивные функции
-  function switchTab(tabId, el) {
+  // 4. ДЕЙСТВИЯ И РЕДАКТИРОВАНИЕ ВСЕХ ЭЛЕМЕНТОВ
+  function switchTab(tabId, btn) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
-    el.classList.add('active');
+    if (btn) btn.classList.add('active');
   }
 
+  function closeModals() {
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('open'));
+  }
+
+  // Приход со смены
+  function openShiftModal() {
+    document.getElementById('inpShiftSum').value = '';
+    document.getElementById('inpShiftNote').value = '';
+    document.getElementById('shiftAutoPct').innerText = state.savingsGoalPct + '%';
+    document.getElementById('modalShift').classList.add('open');
+  }
+
+  function saveShiftIncome() {
+    const val = Number(document.getElementById('inpShiftSum').value);
+    const note = document.getElementById('inpShiftNote').value.trim() || 'Приход со смены';
+    const autoSave = document.getElementById('chkShiftAutoSave').checked;
+    if (val > 0) {
+      state.income += val;
+      if (autoSave) {
+        const toSave = Math.round(val * (state.savingsGoalPct / 100));
+        state.actualSaved = Number(state.actualSaved || 0) + toSave;
+      }
+      addLog(note, val, 'plus');
+      saveState();
+      render();
+      closeModals();
+    }
+  }
+
+  // Редактирование общего дохода
+  function openEditTotalIncomeModal() {
+    document.getElementById('inpTotalIncome').value = state.income;
+    document.getElementById('modalTotalIncome').classList.add('open');
+  }
+
+  function saveTotalIncome() {
+    const val = Number(document.getElementById('inpTotalIncome').value);
+    if (!isNaN(val) && val >= 0) {
+      state.income = val;
+      addLog('Обновлен месячный доход', val, 'plus');
+      saveState();
+      render();
+      closeModals();
+    }
+  }
+
+  // Обязательные счета: Добавление и Редактирование
   function toggleFixed(id) {
     const item = state.fixed.find(i => i.id === id);
     if (item) {
       item.paid = !item.paid;
+      if (item.paid) addLog(`Оплачено: ${item.title}`, item.amount, 'minus');
       saveState();
       render();
     }
+  }
+
+  function openFixedModal(id = null) {
+    if (id) {
+      const item = state.fixed.find(i => i.id === id);
+      if (!item) return;
+      document.getElementById('modalFixedHeader').innerText = '✏️ Редактировать платеж';
+      document.getElementById('inpFixedId').value = item.id;
+      document.getElementById('inpFixedTitle').value = item.title;
+      document.getElementById('inpFixedAmount').value = item.amount;
+      document.getElementById('inpFixedDay').value = item.day || 10;
+    } else {
+      document.getElementById('modalFixedHeader').innerText = '➕ Новый обязательный счет';
+      document.getElementById('inpFixedId').value = '';
+      document.getElementById('inpFixedTitle').value = '';
+      document.getElementById('inpFixedAmount').value = '';
+      document.getElementById('inpFixedDay').value = 10;
+    }
+    document.getElementById('modalFixed').classList.add('open');
+  }
+
+  function saveFixedModal() {
+    const id = document.getElementById('inpFixedId').value;
+    const title = document.getElementById('inpFixedTitle').value.trim();
+    const amount = Number(document.getElementById('inpFixedAmount').value);
+    const day = Number(document.getElementById('inpFixedDay').value) || 10;
+
+    if (!title || isNaN(amount) || amount < 0) return;
+
+    if (id) {
+      const item = state.fixed.find(i => i.id === id);
+      if (item) {
+        item.title = title;
+        item.amount = amount;
+        item.day = day;
+      }
+    } else {
+      state.fixed.push({ id: 'f_' + Date.now(), title, amount, day, paid: false });
+    }
+    saveState();
+    render();
+    closeModals();
   }
 
   function deleteFixed(id) {
@@ -947,20 +1358,47 @@
     render();
   }
 
-  function addLimitSpent(id, val) {
-    const item = state.limits.find(i => i.id === id);
-    if (item) {
-      item.spent = Math.max(0, Number(item.spent) + val);
-      saveState();
-      render();
+  // Лимиты: Добавление, Редактирование и Списание
+  function openLimitModal(id = null) {
+    if (id) {
+      const item = state.limits.find(i => i.id === id);
+      if (!item) return;
+      document.getElementById('modalLimitHeader').innerText = '✏️ Редактировать категорию';
+      document.getElementById('inpLimitId').value = item.id;
+      document.getElementById('inpLimitTitle').value = item.title;
+      document.getElementById('inpLimitMax').value = item.limit;
+      document.getElementById('inpLimitSpent').value = item.spent;
+    } else {
+      document.getElementById('modalLimitHeader').innerText = '➕ Новая категория лимита';
+      document.getElementById('inpLimitId').value = '';
+      document.getElementById('inpLimitTitle').value = '';
+      document.getElementById('inpLimitMax').value = '';
+      document.getElementById('inpLimitSpent').value = 0;
     }
+    document.getElementById('modalLimit').classList.add('open');
   }
 
-  function customLimitSpent(id) {
-    const val = Number(prompt('Сколько прибавить к расходу (₽)? Можно ввести с минусом для отмены:'));
-    if (!isNaN(val) && val !== 0) {
-      addLimitSpent(id, val);
+  function saveLimitModal() {
+    const id = document.getElementById('inpLimitId').value;
+    const title = document.getElementById('inpLimitTitle').value.trim();
+    const limit = Number(document.getElementById('inpLimitMax').value);
+    const spent = Number(document.getElementById('inpLimitSpent').value) || 0;
+
+    if (!title || isNaN(limit) || limit < 0) return;
+
+    if (id) {
+      const item = state.limits.find(i => i.id === id);
+      if (item) {
+        item.title = title;
+        item.limit = limit;
+        item.spent = Math.max(0, spent);
+      }
+    } else {
+      state.limits.push({ id: 'l_' + Date.now(), title, limit, spent: Math.max(0, spent) });
     }
+    saveState();
+    render();
+    closeModals();
   }
 
   function deleteLimit(id) {
@@ -969,66 +1407,42 @@
     render();
   }
 
-  // Модалки
-  function closeModals() {
-    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('open'));
-  }
-
-  function openIncomeModal() {
-    document.getElementById('inpIncomeAmount').value = '';
-    document.getElementById('modalAutoSavePct').innerText = state.savingsGoalPct + '%';
-    document.getElementById('modalIncome').classList.add('open');
-  }
-
-  function submitIncome() {
-    const addVal = Number(document.getElementById('inpIncomeAmount').value);
-    const autoSave = document.getElementById('chkAutoSave').checked;
-    if (addVal > 0) {
-      state.income += addVal;
-      if (autoSave) {
-        state.actualSaved += Math.round(addVal * (state.savingsGoalPct / 100));
-      }
+  function quickSpend(id, delta) {
+    const item = state.limits.find(i => i.id === id);
+    if (item) {
+      item.spent = Math.max(0, Number(item.spent) + delta);
+      if (delta > 0) addLog(`${item.title}`, delta, 'minus');
       saveState();
       render();
-      closeModals();
     }
   }
 
-  function setExactTotalIncome() {
-    const total = Number(prompt('Введи общую сумму дохода за месяц (₽):', state.income));
-    if (!isNaN(total) && total >= 0) {
-      state.income = total;
-      saveState();
-      render();
-      closeModals();
+  function openCustomSpendModal(id) {
+    const item = state.limits.find(i => i.id === id);
+    if (!item) return;
+    document.getElementById('spendCustomTitle').innerText = `Трата: ${item.title}`;
+    document.getElementById('inpSpendLimitId').value = id;
+    document.getElementById('inpSpendCustomVal').value = '';
+    document.getElementById('modalSpendCustom').classList.add('open');
+  }
+
+  function confirmCustomSpend() {
+    const id = document.getElementById('inpSpendLimitId').value;
+    const val = Number(document.getElementById('inpSpendCustomVal').value);
+    if (!isNaN(val) && val !== 0) {
+      quickSpend(id, val);
     }
+    closeModals();
   }
 
-  function openAddFixedModal() {
-    document.getElementById('inpFixedTitle').value = '';
-    document.getElementById('inpFixedAmount').value = '';
-    document.getElementById('modalFixed').classList.add('open');
-  }
-
-  function submitNewFixed() {
-    const title = document.getElementById('inpFixedTitle').value.trim();
-    const amount = Number(document.getElementById('inpFixedAmount').value);
-    const day = Number(document.getElementById('inpFixedDay').value) || 10;
-    if (title && amount > 0) {
-      state.fixed.push({ id: 'f_' + Date.now(), title, amount, day, paid: false });
-      saveState();
-      render();
-      closeModals();
-    }
-  }
-
+  // Настройка копилки
   function openSavingsModal() {
     document.getElementById('inpSavingsPct').value = state.savingsGoalPct;
-    document.getElementById('inpActualSaved').value = state.actualSaved;
+    document.getElementById('inpActualSaved').value = state.actualSaved || 0;
     document.getElementById('modalSavings').classList.add('open');
   }
 
-  function submitSavingsConfig() {
+  function saveSavingsModal() {
     const pct = Number(document.getElementById('inpSavingsPct').value);
     const saved = Number(document.getElementById('inpActualSaved').value);
     if (!isNaN(pct) && pct >= 0 && pct <= 90) state.savingsGoalPct = pct;
@@ -1038,17 +1452,68 @@
     closeModals();
   }
 
-  function openAddLimitModal() {
-    document.getElementById('inpLimitTitle').value = '';
-    document.getElementById('inpLimitMax').value = '';
-    document.getElementById('modalLimit').classList.add('open');
+  // Обработчики ползунков
+  function updateIncomeSlider(val) {
+    state.income = Number(val);
+    saveState();
+    render();
   }
 
-  function submitNewLimit() {
-    const title = document.getElementById('inpLimitTitle').value.trim();
-    const limit = Number(document.getElementById('inpLimitMax').value);
-    if (title && limit > 0) {
-      state.limits.push({ id: 'l_' + Date.now(), title, limit, spent: 0 });
+  function updateSavingsPctSlider(val) {
+    state.savingsGoalPct = Number(val);
+    saveState();
+    render();
+  }
+
+  function updateFixedSlider(id, val) {
+    const item = state.fixed.find(i => i.id === id);
+    if (item) {
+      item.amount = Number(val);
+      saveState();
+      render();
+    }
+  }
+
+  function updateLimitSlider(id, val) {
+    const item = state.limits.find(i => i.id === id);
+    if (item) {
+      item.limit = Number(val);
+      saveState();
+      render();
+    }
+  }
+
+  function clearHistory() {
+    state.history = [];
+    saveState();
+    render();
+  }
+
+  // Модалка </> для разработчика и связи с ботом
+  function openDevModal() {
+    document.getElementById('devUserIdLabel').innerText = USER_ID;
+    document.getElementById('devJsonArea').value = JSON.stringify(state, null, 2);
+    document.getElementById('modalDev').classList.add('open');
+  }
+
+  function copyJsonState() {
+    const area = document.getElementById('devJsonArea');
+    area.select();
+    navigator.clipboard.writeText(area.value);
+    alert('JSON скопирован в буфер обмена!');
+  }
+
+  function sendDataToTelegramBot() {
+    if (tg && typeof tg.sendData === 'function') {
+      tg.sendData(JSON.stringify(state));
+    } else {
+      alert('Отправка sendData доступна при открытии через кнопку Telegram-бота.');
+    }
+  }
+
+  function resetDefaultState() {
+    if (confirm('Сбросить все цифры к стандартным настройкам?')) {
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
       saveState();
       render();
       closeModals();
