@@ -1,1526 +1,612 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FinShift Mini App PRO</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg-main: #090d16;
-      --bg-card: #131b2e;
-      --bg-card-alt: #19233c;
-      --border: rgba(255, 255, 255, 0.08);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --blue: #3b82f6;
-      --indigo: #6366f1;
-      --green: #10b981;
-      --amber: #f59e0b;
-      --red: #ef4444;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    input, textarea {
-      user-select: text;
-    }
-
-    /* Полная блокировка закрытия аппа при вертикальном скролле */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-      position: fixed;
-      inset: 0;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-    }
-
-    .app-scroll {
-      height: 100vh;
-      width: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      overscroll-behavior-y: contain;
-      -webkit-overflow-scrolling: touch;
-      padding: 14px 14px 110px 14px;
-    }
-
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-    }
-
-    /* ВЕРХНЯЯ ПАНЕЛЬ */
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      gap: 8px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--blue), var(--indigo));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 19px;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-    }
-
-    .brand-name {
-      font-weight: 800;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .badge-pro {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 6px;
-      background: rgba(16, 185, 129, 0.18);
-      color: var(--green);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      font-weight: 800;
-    }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .cloud-badge {
-      font-size: 11px;
-      color: var(--text-muted);
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 20px;
-      white-space: nowrap;
-    }
-
-    .icon-btn {
-      background: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* ВЕРХНЯЯ ПЛАШКА ЗП И СМЕН */
-    .salary-strip {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .salary-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      cursor: pointer;
-    }
-
-    .salary-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .salary-val {
-      font-size: 18px;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .salary-btns {
-      display: flex;
-      gap: 6px;
-    }
-
-    .btn-sm-primary {
-      background: linear-gradient(135deg, var(--blue), var(--indigo));
-      color: #fff;
-      border: none;
-      border-radius: 11px;
-      padding: 9px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-sm-edit {
-      background: var(--bg-card-alt);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      padding: 9px 10px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    /* ГЛАВНАЯ КАРТОЧКА SAFE-TO-SPEND */
-    .hero-card {
-      position: relative;
-      background: linear-gradient(135deg, #1e3a8a 0%, #312e81 55%, #0f172a 100%);
-      border-radius: 22px;
-      padding: 20px;
-      margin-bottom: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-      overflow: hidden;
-    }
-
-    .hero-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.78);
-      font-weight: 600;
-      letter-spacing: 0.4px;
-    }
-
-    .days-pill {
-      background: rgba(255, 255, 255, 0.14);
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    .hero-main-val {
-      font-size: 36px;
-      font-weight: 900;
-      margin: 6px 0 4px 0;
-      letter-spacing: -0.5px;
-    }
-
-    .hero-sub {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.78);
-      margin-bottom: 16px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      background: rgba(9, 13, 22, 0.52);
-      padding: 11px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .hero-stat {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      cursor: pointer;
-    }
-
-    .hero-stat-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    .hero-stat-val {
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    /* НАВИГАЦИЯ ПО 4 ВКЛАДКАМ */
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
-      background: var(--bg-card);
-      padding: 4px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      margin-bottom: 14px;
-    }
-
-    .tab {
-      text-align: center;
-      padding: 9px 4px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.18s;
-      white-space: nowrap;
-    }
-
-    .tab.active {
-      background: rgba(59, 130, 246, 0.2);
-      color: #fff;
-      border: 1px solid rgba(59, 130, 246, 0.4);
-    }
-
-    .section { display: none; }
-    .section.active { display: block; }
-
-    /* КАРТОЧКИ */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 14px;
-    }
-
-    .card-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      gap: 8px;
-    }
-
-    .card-title {
-      font-size: 15px;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    .btn-outline {
-      background: var(--bg-card-alt);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 6px 11px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    /* СТРУКТУРА БЮДЖЕТА И ПОЛОСА */
-    .alloc-bar {
-      height: 12px;
-      border-radius: 8px;
-      background: #090d16;
-      display: flex;
-      overflow: hidden;
-      margin: 10px 0 14px 0;
-      gap: 2px;
-    }
-
-    .alloc-seg { height: 100%; transition: width 0.25s ease; }
-
-    .legend-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .legend-box {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    .legend-top {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .dot { width: 8px; height: 8px; border-radius: 50%; }
-    .legend-val { font-size: 15px; font-weight: 800; }
-
-    /* ЭЛЕМЕНТЫ СПИСКА ОБЯЗАТЕЛЬНЫХ СЧЕТОВ */
-    .item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid var(--border);
-      margin-bottom: 8px;
-      gap: 8px;
-    }
-
-    .item-row.paid {
-      opacity: 0.6;
-      border-color: rgba(16, 185, 129, 0.3);
-    }
-
-    .item-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      cursor: pointer;
-    }
-
-    .checkbox-ui {
-      width: 24px;
-      height: 24px;
-      border-radius: 8px;
-      border: 2px solid var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      color: transparent;
-      flex-shrink: 0;
-    }
-
-    .item-row.paid .checkbox-ui {
-      background: var(--green);
-      border-color: var(--green);
-      color: #090d16;
-      font-weight: 900;
-    }
-
-    .item-title { font-size: 14px; font-weight: 700; }
-    .item-row.paid .item-title { text-decoration: line-through; }
-    .item-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-    .item-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .item-amount {
-      font-size: 14px;
-      font-weight: 800;
-      margin-right: 4px;
-      white-space: nowrap;
-    }
-
-    .mini-act-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    /* КАРТОЧКИ ЛИМИТОВ */
-    .limit-box {
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-
-    .progress-bar {
-      height: 8px;
-      background: #090d16;
-      border-radius: 6px;
-      overflow: hidden;
-      margin: 10px 0;
-    }
-
-    .progress-fill {
-      height: 100%;
-      border-radius: 6px;
-      transition: width 0.25s ease;
-    }
-
-    .chips-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .chip-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 7px 0;
-      border-radius: 9px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .chip-btn:active { background: rgba(59, 130, 246, 0.3); }
-
-    /* ИНТЕРАКТИВНЫЕ ПОЛЗУНКИ (ПЛАНИРОВЩИК) */
-    .slider-group {
-      padding: 12px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid var(--border);
-      margin-bottom: 10px;
-    }
-
-    .slider-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      background: #090d16;
-      border-radius: 5px;
-      outline: none;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--blue);
-      border: 2px solid #fff;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    }
-
-    /* МОДАЛЬНЫЕ ШТОРКИ */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.76);
-      backdrop-filter: blur(5px);
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 200;
-    }
-
-    .modal-backdrop.open { display: flex; }
-
-    .modal-sheet {
-      width: 100%;
-      max-width: 480px;
-      max-height: 88vh;
-      overflow-y: auto;
-      background: var(--bg-card);
-      border-top: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 24px 24px 0 0;
-      padding: 20px 18px 30px 18px;
-      animation: slideUp 0.2s ease-out;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-
-    .field-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 5px;
-      display: block;
-    }
-
-    .inp {
-      width: 100%;
-      background: #090d16;
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 15px;
-      margin-bottom: 12px;
-      outline: none;
-    }
-
-    .inp:focus { border-color: var(--blue); }
-
-    .modal-btns {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .btn-full {
-      padding: 13px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 14px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .toggle-box {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      margin-bottom: 12px;
-      font-size: 13px;
-    }
-
-    /* ИСТОРИЯ ОПЕРАЦИЙ */
-    .log-item {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>FinShift Mini App PRO</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#06080E;--gl:rgba(255,255,255,.045);--bd:rgba(255,255,255,.08);--tx:#F4F7FB;--mu:#8B96A9;--em:#34D399;--vi:#8B5CF6;--bl:#38BDF8;--am:#FBBF24;--rd:#FB7185}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;font-variant-numeric:tabular-nums}
+input,textarea{user-select:text}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;position:fixed;inset:0;background:var(--bg);color:var(--tx);font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(420px 320px at 90% -5%,rgba(139,92,246,.28),transparent 70%),radial-gradient(380px 300px at -10% 25%,rgba(52,211,153,.16),transparent 70%)}
+.app-scroll{position:relative;height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding:calc(12px + env(safe-area-inset-top)) 14px 120px}
+.wrap{max-width:480px;margin:0 auto}
+.glass{background:var(--gl);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px}
+.logo{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:18px;background:linear-gradient(135deg,var(--em),var(--vi));box-shadow:0 6px 20px rgba(139,92,246,.45)}
+.pro{font-size:9px;padding:2px 6px;border-radius:6px;color:var(--em);border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.12);margin-left:6px}
+.row{display:flex;align-items:center;gap:8px}.sp{justify-content:space-between}
+.cloud{font-size:10px;color:var(--mu);padding:6px 10px;border-radius:20px;background:var(--gl);border:1px solid var(--bd)}
+.ib{width:34px;height:34px;border-radius:11px;border:1px solid var(--bd);background:var(--gl);color:var(--tx);font:700 12px inherit;cursor:pointer}
+button{font-family:inherit;color:inherit;cursor:pointer;transition:transform .12s}button:active{transform:scale(.95)}
+.strip{display:flex;justify-content:space-between;align-items:center}
+.lbl{font-size:11px;color:var(--mu);font-weight:600}
+.big{font-size:20px;font-weight:800}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;font-size:13px;color:#04120C;background:linear-gradient(135deg,#6EE7B7,#34D399);box-shadow:0 6px 20px rgba(52,211,153,.35)}
+.btn.sm{padding:9px 12px;font-size:12px;border-radius:12px}
+.btn.gh{background:var(--gl);color:var(--tx);border:1px solid var(--bd);box-shadow:none}
+.btn.dg{background:rgba(251,113,133,.14);color:var(--rd);border:1px solid rgba(251,113,133,.35);box-shadow:none}
+.btn.vi{background:linear-gradient(135deg,#A78BFA,#8B5CF6);color:#fff;box-shadow:0 6px 20px rgba(139,92,246,.4)}
+.hero{position:relative;overflow:hidden;border-radius:26px;padding:20px;margin-bottom:12px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(140deg,rgba(16,185,129,.35),rgba(99,102,241,.4) 60%,rgba(10,12,24,.8));box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.hero::after{content:"";position:absolute;width:220px;height:220px;right:-70px;top:-90px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 70%);animation:fl 6s ease-in-out infinite alternate}
+@keyframes fl{to{transform:translate(-30px,25px) scale(1.15)}}
+.pill{font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,.14)}
+.hv{font-size:42px;font-weight:800;letter-spacing:-1.5px;margin:8px 0 2px}
+.hs{font-size:12px;color:rgba(255,255,255,.75);margin-bottom:14px}
+.hg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:11px;border-radius:16px;background:rgba(6,8,14,.5);border:1px solid rgba(255,255,255,.08)}
+.hg b{display:block;font-size:13px;margin-top:3px}
+.hg span{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+.sec{display:none;animation:in .3s ease}.sec.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.h2{font-size:14px;font-weight:800;margin:4px 2px 10px;display:flex;justify-content:space-between;align-items:center}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:calc(100% - 24px);max-width:456px;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:5px;border-radius:22px;background:rgba(14,18,30,.78);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--bd);z-index:20;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.nb{border:0;background:none;padding:8px 2px;border-radius:16px;font-size:10px;font-weight:700;color:var(--mu);display:flex;flex-direction:column;align-items:center;gap:2px}
+.nb i{font-style:normal;font-size:17px}.nb.on{color:var(--tx);background:linear-gradient(135deg,rgba(52,211,153,.22),rgba(139,92,246,.22));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.donut{display:flex;align-items:center;gap:16px}
+.dw{position:relative;width:132px;height:132px;flex:none}
+.dw svg{transform:rotate(-90deg)}
+.dw circle{fill:none;stroke-width:13;stroke-linecap:round;transition:stroke-dasharray .9s cubic-bezier(.2,.8,.2,1),stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+.dc{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.dc b{font-size:15px}.dc span{font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase}
+.lg{flex:1;display:grid;gap:8px;font-size:12px}
+.lg div{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.lg i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.ins{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:18px;margin-bottom:8px;font-size:12.5px;line-height:1.4;font-weight:600;border:1px solid var(--bd);background:var(--gl)}
+.ins.g{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08)}
+.ins.w{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08)}
+.ins.r{border-color:rgba(251,113,133,.3);background:rgba(251,113,133,.08)}
+.ins i{font-style:normal;font-size:17px}
+.it{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.it:last-child{border:0}
+.il{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
+.tt{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis}.ss{font-size:11px;color:var(--mu);margin-top:2px}
+.ir{display:flex;align-items:center;gap:5px}.am{font-weight:800;font-size:13px;margin-right:2px}
+.ma{width:30px;height:30px;border-radius:10px;border:1px solid var(--bd);background:var(--gl);font-size:12px}
+.cb{width:24px;height:24px;border-radius:8px;border:1.5px solid rgba(255,255,255,.22);display:grid;place-items:center;flex:none;font-size:13px;color:transparent;transition:all .2s}
+.paid .cb{background:linear-gradient(135deg,#6EE7B7,#10B981);border-color:transparent;color:#04120C;box-shadow:0 0 14px rgba(52,211,153,.55)}
+.paid .tt{opacity:.5;text-decoration:line-through}
+.pb{height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0}
+.pf{height:100%;width:0;border-radius:8px;transition:width 1s cubic-bezier(.2,.8,.2,1);background:linear-gradient(90deg,#34D399,#38BDF8)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--bd);background:var(--gl);border-radius:10px;padding:7px 11px;font-size:12px;font-weight:700}
+.tag{font-size:9px;font-weight:800;padding:3px 7px;border-radius:7px;background:rgba(139,92,246,.2);color:#C4B5FD;border:1px solid rgba(139,92,246,.4);margin-left:6px;vertical-align:middle}
+.tag.e{background:rgba(52,211,153,.14);color:var(--em);border-color:rgba(52,211,153,.4)}
+.log{display:flex;justify-content:space-between;font-size:12px;padding:7px 0;color:var(--mu)}
+.log b{color:var(--tx)}
+.empty{text-align:center;color:var(--mu);font-size:12.5px;padding:18px 6px;line-height:1.5}
+.bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.bg.on{opacity:1;pointer-events:auto}
+.sheet{width:100%;max-width:480px;margin:0 auto;max-height:88%;overflow-y:auto;overscroll-behavior:contain;background:#0D111C;border:1px solid var(--bd);border-bottom:0;border-radius:28px 28px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.9,.2,1)}
+.bg.on .sheet{transform:none}
+.grab{width:40px;height:4px;border-radius:4px;background:rgba(255,255,255,.18);margin:0 auto 14px}
+.sheet h3{margin:0 0 14px;font-size:17px}
+.fl{display:block;font-size:11px;color:var(--mu);font-weight:700;margin-bottom:11px}
+.fl input{display:block;width:100%;margin-top:6px;padding:13px;border-radius:14px;border:1px solid var(--bd);background:rgba(255,255,255,.05);color:var(--tx);font:700 15px inherit;outline:0}
+.fl input:focus{border-color:rgba(52,211,153,.6)}
+.sheet .btn{width:100%;margin-top:6px;padding:14px}
+input[type=range]{width:100%;accent-color:var(--em);margin:8px 0 2px}
+.sp3{display:flex;height:10px;border-radius:10px;overflow:hidden;margin:10px 0;gap:2px}
+.sp3 div{transition:flex .3s}
+.pr{display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:6px 0}
+textarea{width:100%;height:110px;border-radius:12px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--mu);font:11px monospace;padding:10px;margin-bottom:8px}
+.fab{position:fixed;right:max(18px,calc(50% - 222px));bottom:calc(90px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:50%;border:0;font-size:28px;font-weight:700;color:#04120C;background:linear-gradient(135deg,#6EE7B7,#34D399);box-shadow:0 10px 28px rgba(52,211,153,.5);z-index:25}
+.chip.on{background:rgba(52,211,153,.2);border-color:rgba(52,211,153,.6);color:var(--em)}
+</style>
 </head>
 <body>
+<div class="app-scroll" id="scrollContainer"><div class="wrap">
 
-<div class="app-scroll" id="scrollContainer">
-  <div class="container">
+<div class="top">
+  <div class="brand"><div class="logo">💎</div><div>FinShift<span class="pro">PRO</span></div></div>
+  <div class="row"><span class="cloud" id="syncStatus">🔄</span><button class="ib" onclick="openDev()">&lt;/&gt;</button></div>
+</div>
 
-    <!-- ШАПКА -->
-    <div class="topbar">
-      <div class="brand">
-        <div class="brand-logo">💎</div>
-        <div class="brand-name">FinShift <span class="badge-pro">PRO</span></div>
-      </div>
-      <div class="top-actions">
-        <div class="cloud-badge" id="syncStatus">☁️ Синхр.</div>
-        <button class="icon-btn" onclick="openDevModal()" title="Код и экспорт в бота">&lt;/&gt;</button>
-      </div>
-    </div>
+<div class="glass strip" style="padding:12px 16px">
+  <div onclick="openIncome()" style="cursor:pointer"><div class="lbl">Доход за месяц ✏️</div><div class="big" id="topSalaryVal">0</div></div>
+  <button class="btn sm" onclick="openShift()">＋ Смена / Доход</button>
+</div>
 
-    <!-- ПЛАШКА ЗП И СМЕН (Из твоего бота) -->
-    <div class="salary-strip">
-      <div class="salary-info" onclick="openEditTotalIncomeModal()">
-        <span class="salary-label">Месячный приход (ЗП + % + чай) ✏️</span>
-        <span class="salary-val" id="topSalaryVal">85 000 ₽</span>
-      </div>
-      <div class="salary-btns">
-        <button class="btn-sm-edit" onclick="openEditTotalIncomeModal()" title="Изменить общий доход">✏️</button>
-        <button class="btn-sm-primary" onclick="openShiftModal()">+ Смена / ЗП</button>
-      </div>
-    </div>
-
-    <!-- ГЛАВНЫЙ ЭКРАН SAFE-TO-SPEND -->
-    <div class="hero-card">
-      <div class="hero-top">
-        <span>БЕЗОПАСНЫЙ ЛИМИТ НА СЕГОДНЯ</span>
-        <span class="days-pill" id="daysPill" onclick="openSavingsModal()">Осталось 15 дн.</span>
-      </div>
-      <div class="hero-main-val" id="safeDailyVal">0 ₽</div>
-      <div class="hero-sub" id="freeMonthlySub">Свободный пул на месяц: 0 ₽</div>
-
-      <div class="hero-grid">
-        <div class="hero-stat" onclick="switchTab('fixed', document.querySelectorAll('.tab')[1])">
-          <span class="hero-stat-label">В резерве счетов</span>
-          <span class="hero-stat-val" id="heroReserved" style="color:#93c5fd;">0 ₽</span>
-        </div>
-        <div class="hero-stat" onclick="switchTab('limits', document.querySelectorAll('.tab')[2])">
-          <span class="hero-stat-label">Остаток лимитов</span>
-          <span class="hero-stat-val" id="heroLimitsLeft" style="color:#fcd34d;">0 ₽</span>
-        </div>
-        <div class="hero-stat" onclick="openSavingsModal()">
-          <span class="hero-stat-label">Копилка (<span id="heroPct">20</span>%) ✏️</span>
-          <span class="hero-stat-val" id="heroSaved" style="color:var(--green);">0 ₽</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4 ВКЛАДКИ -->
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('overview', this)">Обзор</div>
-      <div class="tab" onclick="switchTab('fixed', this)">Обязательные</div>
-      <div class="tab" onclick="switchTab('limits', this)">Лимиты</div>
-      <div class="tab" onclick="switchTab('sliders', this)">🎚 Ползунки</div>
-    </div>
-
-    <!-- ВКЛАДКА 1: ОБЗОР -->
-    <div id="tab-overview" class="section active">
-      <div class="card">
-        <div class="card-head">
-          <h3 class="card-title">Распределение бюджета</h3>
-          <button class="btn-outline" onclick="openSavingsModal()">🎯 Копилка ✏️</button>
-        </div>
-
-        <div class="alloc-bar">
-          <div class="alloc-seg" id="barFixed" style="background:var(--blue); width:25%"></div>
-          <div class="alloc-seg" id="barLimits" style="background:var(--amber); width:25%"></div>
-          <div class="alloc-seg" id="barSavings" style="background:var(--green); width:20%"></div>
-          <div class="alloc-seg" id="barFree" style="background:var(--indigo); width:30%"></div>
-        </div>
-
-        <div class="legend-grid">
-          <div class="legend-box" onclick="switchTab('fixed', document.querySelectorAll('.tab')[1])">
-            <div class="legend-top"><span class="dot" style="background:var(--blue)"></span>Обязательные (Фикс)</div>
-            <div class="legend-val" id="legFixed">0 ₽</div>
-          </div>
-          <div class="legend-box" onclick="switchTab('limits', document.querySelectorAll('.tab')[2])">
-            <div class="legend-top"><span class="dot" style="background:var(--amber)"></span>Базовые лимиты</div>
-            <div class="legend-val" id="legLimits">0 ₽</div>
-          </div>
-          <div class="legend-box" onclick="openSavingsModal()">
-            <div class="legend-top"><span class="dot" style="background:var(--green)"></span>Отложено в копилку ✏️</div>
-            <div class="legend-val" id="legSavings" style="color:var(--green)">0 ₽</div>
-          </div>
-          <div class="legend-box" onclick="switchTab('sliders', document.querySelectorAll('.tab')[3])">
-            <div class="legend-top"><span class="dot" style="background:var(--indigo)"></span>Чистый профицит</div>
-            <div class="legend-val" id="legFree">0 ₽</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <h3 class="card-title">Неоплаченные счета в этом месяце</h3>
-          <button class="btn-outline" onclick="openFixedModal()">+ Счет</button>
-        </div>
-        <div id="overviewUnpaidList"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <h3 class="card-title">Последние операции</h3>
-          <button class="btn-outline" onclick="clearHistory()">Очистить</button>
-        </div>
-        <div id="historyList"></div>
-      </div>
-    </div>
-
-    <!-- ВКЛАДКА 2: ОБЯЗАТЕЛЬНЫЕ РАСХОДЫ -->
-    <div id="tab-fixed" class="section">
-      <div class="card">
-        <div class="card-head">
-          <h3 class="card-title">Фиксированные платежи</h3>
-          <button class="btn-sm-primary" onclick="openFixedModal()">+ Добавить счет</button>
-        </div>
-        <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
-          Нажми на галочку, когда оплатишь счет, или на ✏️, чтобы изменить название, сумму и дату.
-        </p>
-        <div id="fixedListContainer"></div>
-      </div>
-    </div>
-
-    <!-- ВКЛАДКА 3: ЛИМИТЫ -->
-    <div id="tab-limits" class="section">
-      <div class="card">
-        <div class="card-head">
-          <h3 class="card-title">Переменные лимиты</h3>
-          <button class="btn-sm-primary" onclick="openLimitModal()">+ Категория</button>
-        </div>
-        <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
-          Быстро списывай траты кнопками или нажми ✏️ для редактирования лимита и потраченной суммы.
-        </p>
-        <div id="limitsListContainer"></div>
-      </div>
-    </div>
-
-    <!-- ВКЛАДКА 4: ИНТЕРАКТИВНЫЕ ПОЛЗУНКИ (ПЛАНИРОВЩИК) -->
-    <div id="tab-sliders" class="section">
-      <div class="card">
-        <div class="card-head">
-          <h3 class="card-title">Планировщик бюджета</h3>
-          <span style="font-size:12px; color:var(--green); font-weight:700;" id="sliderSavingsRate">Норма: 20%</span>
-        </div>
-        <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
-          Двигай ползунки, чтобы мгновенно менять свой доход, процент копилки и суммы всех категорий.
-        </p>
-        <div id="slidersDynamicContainer"></div>
-      </div>
-    </div>
-
+<div class="hero">
+  <div class="row sp" style="position:relative;z-index:1"><span class="lbl" style="color:rgba(255,255,255,.8);letter-spacing:.5px">БЕЗОПАСНО НА ДЕНЬ</span><span class="pill" id="daysPill"></span></div>
+  <div class="hv" id="safeDailyVal" style="position:relative;z-index:1">0 ₽</div>
+  <div class="hs" id="freeSub" style="position:relative;z-index:1"></div>
+  <div class="hg" style="position:relative;z-index:1">
+    <div><span>К оплате</span><b id="hRes"></b></div>
+    <div><span>Лимиты</span><b id="hLim"></b></div>
+    <div><span>Копилка</span><b id="hSav"></b></div>
   </div>
 </div>
 
-<!-- МОДАЛКА 1: ДОБАВИТЬ СМЕНУ / ПРИХОД -->
-<div class="modal-backdrop" id="modalShift">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 12px 0;">➕ Внести смену / чаевые / аванс</h3>
-    <label class="field-label">Сумма прихода (₽)</label>
-    <input type="number" id="inpShiftSum" class="inp" placeholder="Например: 5200">
-
-    <label class="field-label">Комментарий (необязательно)</label>
-    <input type="text" id="inpShiftNote" class="inp" placeholder="Смена пятница + чай">
-
-    <div class="toggle-box">
-      <span>Сразу отложить <b id="shiftAutoPct">20%</b> в копилку</span>
-      <input type="checkbox" id="chkShiftAutoSave" checked style="width:20px; height:20px;">
+<!-- ОБЗОР -->
+<div class="sec on" id="tab-ov">
+  <div id="insights"></div>
+  <div class="glass" id="balCard"></div>
+  <div class="glass" id="fcCard"></div>
+  <div class="glass">
+    <div class="h2">Куда уходят деньги</div>
+    <div class="donut">
+      <div class="dw">
+        <svg width="132" height="132" viewBox="0 0 132 132">
+          <circle cx="66" cy="66" r="54" stroke="rgba(255,255,255,.06)" stroke-dasharray="340 0"/>
+          <circle id="d0" cx="66" cy="66" r="54" stroke="#8B5CF6" stroke-dasharray="0 340"/>
+          <circle id="d1" cx="66" cy="66" r="54" stroke="#38BDF8" stroke-dasharray="0 340"/>
+          <circle id="d2" cx="66" cy="66" r="54" stroke="#FBBF24" stroke-dasharray="0 340"/>
+          <circle id="d3" cx="66" cy="66" r="54" stroke="#34D399" stroke-dasharray="0 340"/>
+        </svg>
+        <div class="dc"><span>свободно</span><b id="dCenter"></b></div>
+      </div>
+      <div class="lg" id="legend"></div>
     </div>
+  </div>
+  <div class="glass"><div class="h2">Ближайшие платежи</div><div id="unpaidList"></div></div>
+  <div class="glass"><div class="h2">История <button class="chip" onclick="clearHistory()">Очистить</button></div><div id="historyList"></div></div>
+  <div class="glass" id="archCard"></div>
+</div>
 
-    <div class="modal-btns">
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
-      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveShiftIncome()">Зачислить</button>
-    </div>
+<!-- СЧЕТА -->
+<div class="sec" id="tab-bills">
+  <div class="glass"><div class="h2">Обязательные счета <button class="btn sm" onclick="openFixed()">＋ Добавить</button></div><div id="fixedList"></div></div>
+</div>
+
+<!-- ЛИМИТЫ -->
+<div class="sec" id="tab-lim">
+  <div class="h2">Переменные лимиты <button class="btn sm" onclick="openLimit()">＋ Категория</button></div>
+  <div id="limList"></div>
+</div>
+
+<!-- ДОЛГИ -->
+<div class="sec" id="tab-debt">
+  <div class="glass" id="debtSummary"></div>
+  <div class="h2">Убийца долгов <button class="btn sm vi" onclick="openDebt()">＋ Долг</button></div>
+  <div id="debtList"></div>
+</div>
+
+<!-- КОПИЛКА -->
+<div class="sec" id="tab-vault">
+  <div class="glass" id="vaultCard"></div>
+  <div class="glass">
+    <div class="row sp"><span class="tt">🎯 Откладывать с дохода</span><b id="pctLbl"></b></div>
+    <input type="range" min="0" max="60" step="1" id="pctRange" oninput="setPct(this.value)">
+    <div class="ss">Правило «Сначала заплати себе»: эта доля автоматически уходит в копилку со смены.</div>
   </div>
 </div>
 
-<!-- МОДАЛКА 2: РЕДАКТИРОВАТЬ ОБЩИЙ ДОХОД ЗА МЕСЯЦ -->
-<div class="modal-backdrop" id="modalTotalIncome">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 12px 0;">✏️ Редактировать месячный доход</h3>
-    <label class="field-label">Общий доход за месяц (ЗП + % + чаевые), ₽</label>
-    <input type="number" id="inpTotalIncome" class="inp" placeholder="85000">
+</div></div>
 
-    <div class="modal-btns">
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
-      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveTotalIncome()">Сохранить</button>
-    </div>
-  </div>
+<div class="nav" id="nav">
+  <button class="nb on" onclick="tab('ov',this)"><i>✨</i>Обзор</button>
+  <button class="nb" onclick="tab('bills',this)"><i>🧾</i>Счета</button>
+  <button class="nb" onclick="tab('lim',this)"><i>🛒</i>Лимиты</button>
+  <button class="nb" onclick="tab('debt',this)"><i>⛓️</i>Долги</button>
+  <button class="nb" onclick="tab('vault',this)"><i>🏦</i>Копилка</button>
 </div>
 
-<!-- МОДАЛКА 3: ДОБАВИТЬ / РЕДАКТИРОВАТЬ ОБЯЗАТЕЛЬНЫЙ СЧЕТ -->
-<div class="modal-backdrop" id="modalFixed">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 12px 0;" id="modalFixedHeader">Обязательный платеж</h3>
-    <input type="hidden" id="inpFixedId">
+<button class="fab" onclick="openExpense()">＋</button>
 
-    <label class="field-label">Название платежа</label>
-    <input type="text" id="inpFixedTitle" class="inp" placeholder="Аренда / ЖКХ / Интернет">
-
-    <label class="field-label">Сумма (₽)</label>
-    <input type="number" id="inpFixedAmount" class="inp" placeholder="25000">
-
-    <label class="field-label">День оплаты в месяце (1–31)</label>
-    <input type="number" id="inpFixedDay" class="inp" placeholder="5">
-
-    <div class="modal-btns">
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
-      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveFixedModal()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- МОДАЛКА 4: ДОБАВИТЬ / РЕДАКТИРОВАТЬ КАТЕГОРИЮ ЛИМИТА -->
-<div class="modal-backdrop" id="modalLimit">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 12px 0;" id="modalLimitHeader">Категория лимита</h3>
-    <input type="hidden" id="inpLimitId">
-
-    <label class="field-label">Название категории</label>
-    <input type="text" id="inpLimitTitle" class="inp" placeholder="Продукты / Спортпит / Такси">
-
-    <label class="field-label">Лимит на месяц (₽)</label>
-    <input type="number" id="inpLimitMax" class="inp" placeholder="18000">
-
-    <label class="field-label">Уже потрачено в этом месяце (₽)</label>
-    <input type="number" id="inpLimitSpent" class="inp" placeholder="0">
-
-    <div class="modal-btns">
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
-      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="saveLimitModal()">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<!-- МОДАЛКА 5: НАСТРОЙКА КОПИЛКИ -->
-<div class="modal-backdrop" id="modalSavings">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 12px 0;">🎯 Настройка копилки</h3>
-    <label class="field-label">Целевой % сбережений от дохода</label>
-    <input type="number" id="inpSavingsPct" class="inp" placeholder="20">
-
-    <label class="field-label">Фактически отложено на счет в этом месяце (₽)</label>
-    <input type="number" id="inpActualSaved" class="inp" placeholder="17000">
-
-    <div class="modal-btns">
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
-      <button class="btn-full" style="background:var(--green); color:#090d16;" onclick="saveSavingsModal()">Обновить</button>
-    </div>
-  </div>
-</div>
-
-<!-- МОДАЛКА 6: СВОЯ СУММА СПИСАНИЯ ПО ЛИМИТУ -->
-<div class="modal-backdrop" id="modalSpendCustom">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 12px 0;" id="spendCustomTitle">Списать сумму</h3>
-    <input type="hidden" id="inpSpendLimitId">
-    <label class="field-label">Сумма расхода в ₽ (можно с минусом, чтобы отменить)</label>
-    <input type="number" id="inpSpendCustomVal" class="inp" placeholder="Например: 750">
-
-    <div class="modal-btns">
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Отмена</button>
-      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="confirmCustomSpend()">Провести</button>
-    </div>
-  </div>
-</div>
-
-<!-- МОДАЛКА 7: DEV / JSON / ОТПРАВКА В БОТА -->
-<div class="modal-backdrop" id="modalDev">
-  <div class="modal-sheet">
-    <h3 style="margin:0 0 8px 0;">&lt;/&gt; Синхронизация и JSON-стейт</h3>
-    <p style="font-size:12px; color:var(--text-muted); margin-top:0;">
-      Telegram User ID: <b id="devUserIdLabel">...</b>
-    </p>
-    <textarea id="devJsonArea" class="inp" style="height:150px; font-family:monospace; font-size:11px;" readonly></textarea>
-    
-    <div class="modal-btns" style="margin-bottom:8px;">
-      <button class="btn-full" style="background:var(--blue); color:#fff;" onclick="sendDataToTelegramBot()">📤 Отправить в бота</button>
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="copyJsonState()">📋 Скопировать JSON</button>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-full" style="background:rgba(239,68,68,0.2); color:var(--red);" onclick="resetDefaultState()">Сбросить всё</button>
-      <button class="btn-full" style="background:var(--bg-card-alt); color:#fff;" onclick="closeModals()">Закрыть</button>
-    </div>
-  </div>
+<div class="bg" id="bg" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet"><div class="grab"></div><h3 id="shTitle"></h3><div id="shBody" oninput="onLive()"></div><button class="btn" id="shSave"></button></div>
 </div>
 
 <script>
-  // 1. ЖЕСТКАЯ ЗАЩИТА ОТ СВОРАЧИВАНИЯ ПРИ СКРОЛЛЕ В TELEGRAM
-  const tg = window.Telegram?.WebApp;
-  if (tg) {
-    tg.ready();
-    tg.expand();
-    if (typeof tg.disableVerticalSwipes === 'function') {
-      tg.disableVerticalSwipes();
-    }
+// 1. ЗАЩИТА ОТ СВОРАЧИВАНИЯ ПРИ СКРОЛЛЕ В TELEGRAM
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes(); try{tg.setHeaderColor('#06080E');tg.setBackgroundColor('#06080E')}catch(e){} }
+const scroller = document.getElementById('scrollContainer');
+let touchStartY = 0;
+scroller.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+scroller.addEventListener('touchmove', e => {
+  if (scroller.scrollTop <= 0 && e.touches[0].clientY > touchStartY) e.preventDefault();
+}, { passive: false });
+
+const USER_ID = tg?.initDataUnsafe?.user?.id || 'dev_user_test';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const fmt = n => Math.round(Number(n) || 0).toLocaleString('ru-RU') + ' ₽';
+function hp(t) { try { const h = tg?.HapticFeedback; if (!h) return;
+  if (t === 'ok') h.notificationOccurred('success'); else if (t === 'warn') h.notificationOccurred('warning');
+  else h.impactOccurred(t || 'light'); } catch (e) {} }
+function ask(msg, cb) { if (tg?.showConfirm) { try { tg.showConfirm(msg, ok => ok && cb()); return; } catch (e) {} } if (confirm(msg)) cb(); }
+
+// 2. СТЕЙТ + ОБЛАЧНАЯ СИНХРОНИЗАЦИЯ SUPABASE + РЕЗЕРВ В LOCALSTORAGE
+const DEFAULT_STATE = {
+  income: 85000, savingsGoalPct: 20, actualSaved: 17000,
+  savingsGoalTarget: 100000, savingsGoalName: 'Подушка безопасности',
+  reservePct: 30, reserveBalance: 0, extraDebt: 0,
+  balance: 0, balanceSet: false, balanceChecked: '', earned: 0, month: '', lastCat: '', shiftLog: [], archive: [],
+  fixed: [
+    { id: 'f1', title: 'Аренда квартиры', amount: 25000, day: 5, paid: false },
+    { id: 'f2', title: 'ЖКХ, интернет, связь', amount: 3500, day: 10, paid: true },
+    { id: 'f3', title: 'VPS Сервер / Подписки', amount: 1500, day: 15, paid: false }
+  ],
+  limits: [
+    { id: 'l1', title: 'Продукты и быт', limit: 18000, spent: 6400 },
+    { id: 'l2', title: 'Спортпит и здоровье', limit: 4500, spent: 1500 },
+    { id: 'l3', title: 'Проезд / Такси со смен', limit: 4000, spent: 1200 }
+  ],
+  debts: [],
+  history: [{ title: 'Начальный баланс настроен', amount: 85000, type: 'plus', date: 'Сегодня' }]
+};
+let state = clone(DEFAULT_STATE);
+
+// Безопасный мерж: старый стейт из БД не ломает приложение, недостающие поля берутся из дефолта
+function mergeState(s) {
+  const o = clone(DEFAULT_STATE);
+  if (!s || typeof s !== 'object') return o;
+  for (const k in DEFAULT_STATE) {
+    const d = DEFAULT_STATE[k], v = s[k];
+    if (v === undefined || v === null) continue;
+    if (Array.isArray(d)) { if (Array.isArray(v)) o[k] = v; }
+    else if (typeof d === 'number') { const n = Number(v); if (!isNaN(n)) o[k] = n; }
+    else o[k] = v;
   }
+  return o;
+}
 
-  // Блокируем передачу свайпа вниз самому клиенту Telegram на границе скролла
-  const scroller = document.getElementById('scrollContainer');
-  let touchStartY = 0;
-  scroller.addEventListener('touchstart', (e) => {
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  scroller.addEventListener('touchmove', (e) => {
-    const currentY = e.touches[0].clientY;
-    const isPullingDown = currentY > touchStartY;
-    if (scroller.scrollTop <= 0 && isPullingDown) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-
-  const USER_ID = tg?.initDataUnsafe?.user?.id || 'dev_user_test';
-
-  // Дефолтный стейт
-  const DEFAULT_STATE = {
-    income: 85000,
-    savingsGoalPct: 20,
-    actualSaved: 17000,
-    fixed: [
-      { id: 'f1', title: 'Аренда квартиры', amount: 25000, day: 5, paid: false },
-      { id: 'f2', title: 'ЖКХ, интернет, связь', amount: 3500, day: 10, paid: true },
-      { id: 'f3', title: 'VPS Сервер / Подписки', amount: 1500, day: 15, paid: false }
-    ],
-    limits: [
-      { id: 'l1', title: 'Продукты и быт', limit: 18000, spent: 6400 },
-      { id: 'l2', title: 'Спортпит и здоровье', limit: 4500, spent: 1500 },
-      { id: 'l3', title: 'Проезд / Такси со смен', limit: 4000, spent: 1200 }
-    ],
-    history: [
-      { title: 'Начальный баланс настроен', amount: 85000, type: 'plus', date: 'Сегодня' }
-    ]
-  };
-
-  let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-
-  // 2. ОБЛАЧНАЯ СИНХРОНИЗАЦИЯ SUPABASE + РЕЗЕРВ В LOCALSTORAGE
-  let syncTimer;
-  function saveState() {
+let syncTimer;
+function saveState() {
+  try { localStorage.setItem('finshift_backup_state', JSON.stringify(state)); } catch (e) {}
+  const badge = $('syncStatus');
+  badge.textContent = '⏳ Сохранение...';
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(async () => {
     try {
-      localStorage.setItem('finshift_backup_state', JSON.stringify(state));
-    } catch (e) {}
+      const res = await fetch('/api/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: USER_ID, state }) });
+      if (!res.ok) throw new Error('Cloud error');
+      badge.textContent = '☁️ Облако: ОК';
+    } catch (err) { badge.textContent = '💾 Сохранено'; }
+  }, 350);
+}
 
-    const badge = document.getElementById('syncStatus');
-    badge.innerText = '⏳ Сохранение...';
-    clearTimeout(syncTimer);
-    syncTimer = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: USER_ID, state })
-        });
-        if (!res.ok) throw new Error('Cloud error');
-        badge.innerText = '☁️ Облако: ОК';
-      } catch (err) {
-        badge.innerText = '💾 Сохранено';
-      }
-    }, 350);
+async function loadState() {
+  const badge = $('syncStatus');
+  badge.textContent = '🔄 Загрузка...';
+  try { const local = localStorage.getItem('finshift_backup_state'); if (local) state = mergeState(JSON.parse(local)); } catch (e) {}
+  render();
+  try {
+    const res = await fetch(`/api/sync?userId=${USER_ID}`);
+    const data = await res.json();
+    if (data && data.state) state = mergeState(data.state);
+    badge.textContent = '☁️ Облако: ОК';
+  } catch (e) { badge.textContent = '💾 Автономно'; }
+  rollover();
+  const botIncome = Number(new URLSearchParams(window.location.search).get('income'));
+  if (botIncome > 0 && state.income !== botIncome) {
+    state.income = botIncome; addLog('Синхронизация ЗП из бота', botIncome, 'plus'); saveState();
   }
+  render();
+}
 
-  async function loadState() {
-    const badge = document.getElementById('syncStatus');
-    badge.innerText = '🔄 Загрузка...';
+function addLog(title, amount, type = 'minus') {
+  const t = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  state.history = state.history || [];
+  state.history.unshift({ title, amount, type, date: t });
+  if (state.history.length > 20) state.history.pop();
+}
+const commit = () => { saveState(); render(); };
 
-    // Сначала читаем локальный бэкап для мгновенного отклика
-    try {
-      const local = localStorage.getItem('finshift_backup_state');
-      if (local) state = Object.assign({}, DEFAULT_STATE, JSON.parse(local));
-    } catch (e) {}
+// 3. РАСЧЁТЫ
+const rem = d => Math.max(0, Number(d.total) - Number(d.paid));
+function dleft() { const d = new Date(); return Math.max(1, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() - d.getDate() + 1); }
+function calc() {
+  const dl = dleft();
+  const fixedTotal = state.fixed.reduce((a, i) => a + Number(i.amount), 0);
+  const act = state.debts.filter(d => rem(d) > 0 || d.minPaid);
+  const debtMin = act.reduce((a, d) => a + Number(d.min), 0);
+  const unpaidFixed = state.fixed.filter(i => !i.paid).reduce((a, i) => a + Number(i.amount), 0);
+  const unpaidDebt = state.debts.filter(d => rem(d) > 0 && !d.minPaid).reduce((a, d) => a + Math.min(Number(d.min), rem(d)), 0);
+  const limMax = state.limits.reduce((a, i) => a + Number(i.limit), 0);
+  const limSpent = state.limits.reduce((a, i) => a + Number(i.spent), 0);
+  const limCost = state.limits.reduce((a, i) => a + Math.max(Number(i.limit), Number(i.spent)), 0);
+  const target = Math.round(state.income * state.savingsGoalPct / 100);
+  const eff = Math.max(target, Number(state.actualSaved) || 0);
+  const mand = fixedTotal + debtMin;
+  const free = state.income - mand - limCost - eff - (Number(state.extraDebt) || 0);
+  return { dl, fixedTotal, debtMin, mand, unpaid: unpaidFixed + unpaidDebt, limLeft: Math.max(0, limMax - limSpent), limCost, eff, free, safe: Math.max(0, Math.floor(free / dl)) };
+}
+function eta(rm, min) { return min > 0 ? Math.ceil(rm / min) : Infinity; }
+function mon(n) { return n === Infinity ? '∞' : n + ' мес.'; }
 
-    // Затем подтягиваем свежий стейт из облака Supabase
-    try {
-      const res = await fetch(`/api/sync?userId=${USER_ID}`);
-      const data = await res.json();
-      if (data && data.state) {
-        state = {
-          income: Number(data.state.income ?? 85000),
-          savingsGoalPct: Number(data.state.savingsGoalPct ?? 20),
-          actualSaved: Number(data.state.actualSaved ?? 0),
-          fixed: Array.isArray(data.state.fixed) ? data.state.fixed : DEFAULT_STATE.fixed,
-          limits: Array.isArray(data.state.limits) ? data.state.limits : DEFAULT_STATE.limits,
-          history: Array.isArray(data.state.history) ? data.state.history : []
-        };
-      }
-      badge.innerText = '☁️ Облако: ОК';
-    } catch (e) {
-      badge.innerText = '💾 Автономно';
-    }
+function countTo(el, to) {
+  const from = el._v || 0; el._v = to; const t0 = performance.now();
+  (function s(t) { const p = Math.min(1, (t - t0) / 600), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(s); })(t0);
+}
+function bars() { requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('[data-w]').forEach(e => e.style.width = e.dataset.w + '%'))); }
 
-    // Если бот передал ?income= в ссылке
-    const urlParams = new URLSearchParams(window.location.search);
-    const botIncome = Number(urlParams.get('income'));
-    if (botIncome > 0 && state.income !== botIncome) {
-      state.income = botIncome;
-      addLog('Синхронизация ЗП из бота', botIncome, 'plus');
-      saveState();
-    }
-
-    render();
+// 4. РЕНДЕР
+function insights(c) {
+  const r = [], d = new Date().getDate();
+  const bills = state.fixed.filter(i => !i.paid).map(i => ({ ...i, diff: (i.day || 10) - d })).sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff));
+  const b = bills.find(x => x.diff >= 0) || bills[0];
+  if (b) {
+    const short = c.unpaid - (Number(state.reserveBalance) || 0);
+    if (b.diff < 0) r.push({ c: 'r', i: '🚨', t: `Платёж «${esc(b.title)}» просрочен на ${-b.diff} дн. Закрой его первым.` });
+    else if (short > 0 && b.diff <= 10) r.push({ c: 'w', i: '⏰', t: `До «${esc(b.title)}» ${b.diff} дн., в резерве не хватает ${fmt(short)} — отложи со следующей смены.` });
+    else if (short <= 0) r.push({ c: 'g', i: '🛡️', t: 'Резерв покрывает все ближайшие обязательные платежи.' });
   }
+  if (c.free < 0) r.push({ c: 'r', i: '⚠️', t: `Дефицит бюджета ${fmt(-c.free)}. Урежь лимиты или добавь смену.` });
+  else if (c.free > 0) r.push({ c: 'g', i: '🚀', t: `Ты идёшь с опережением плана! Свободный профицит: +${fmt(c.free)}` });
+  const over = state.limits.find(l => l.spent > l.limit);
+  if (over) r.push({ c: 'r', i: '🛒', t: `Лимит «${esc(over.title)}» превышен на ${fmt(over.spent - over.limit)}.` });
+  const dd = state.debts.filter(x => rem(x) > 0).sort((a, b) => b.rate - a.rate)[0];
+  if (dd) r.push({ c: 'w', i: '⛓️', t: `Бей по «${esc(dd.title)}»${dd.rate ? ' (ставка ' + dd.rate + '%)' : ''}: остаток ${fmt(rem(dd))}. Досрочный платёж ускорит свободу.` });
+  if (Number(state.actualSaved) >= state.savingsGoalTarget && state.savingsGoalTarget > 0) r.unshift({ c: 'g', i: '🎉', t: 'Цель копилки достигнута! Поставь новую.' });
+  const pre = [];
+  if (!state.balanceSet) pre.push({ c: 'w', i: '💳', t: 'Укажи реальный остаток на карте (карточка «Реально на руках») — тогда «безопасно на день» станет точным.' });
+  else if (state.balance - c.unpaid < 0) pre.push({ c: 'r', i: '🚨', t: `После обязательных платежей не хватает ${fmt(c.unpaid - state.balance)}. Урежь лимиты и добавь смену.` });
+  return pre.concat(r).slice(0, 3);
+}
 
-  function addLog(title, amount, type = 'minus') {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    state.history = state.history || [];
-    state.history.unshift({ title, amount, type, date: timeStr });
-    if (state.history.length > 15) state.history.pop();
-  }
+function render(skipVault) {
+  const c = calc();
+  $('daysPill').textContent = `Осталось ${c.dl} дн.`;
+  $('topSalaryVal').textContent = fmt(state.income);
+  const real = state.balanceSet, after = state.balance - c.unpaid;
+  const sv = $('safeDailyVal'); countTo(sv, real ? Math.max(0, Math.floor(after / c.dl)) : c.safe); sv.style.color = (real ? after < 0 : c.free < 0) ? 'var(--rd)' : '#fff';
+  $('freeSub').textContent = real ? `На руках ${fmt(state.balance)} · после счетов ${fmt(after)}` : (c.free >= 0 ? `Свободный остаток: ${fmt(c.free)}` : `⚠️ Дефицит бюджета: ${fmt(c.free)}`);
+  $('hRes').textContent = fmt(c.unpaid); $('hLim').textContent = fmt(c.limLeft); $('hSav').textContent = fmt(c.eff);
 
-  function fmt(n) {
-    return Math.round(Number(n) || 0).toLocaleString('ru-RU') + ' ₽';
-  }
+  // Donut
+  const segs = [c.mand, c.limCost, c.eff, Math.max(0, c.free)], cols = ['#8B5CF6', '#38BDF8', '#FBBF24', '#34D399'];
+  const names = ['Счета и долги', 'Лимиты', 'Копилка', 'Свободно'], C = 2 * Math.PI * 54;
+  const tot = Math.max(1, segs.reduce((a, b) => a + b, 0)); let off = 0;
+  segs.forEach((v, i) => { const len = v / tot * C, g = len > 6 ? 3 : 0, e = $('d' + i);
+    e.setAttribute('stroke-dasharray', `${Math.max(0, len - g)} ${C}`); e.setAttribute('stroke-dashoffset', -off); off += len; });
+  $('dCenter').textContent = fmt(Math.max(0, c.free));
+  $('legend').innerHTML = segs.map((v, i) => `<div><span><i style="background:${cols[i]}"></i>${names[i]}</span><b>${fmt(v)}</b></div>`).join('');
 
-  function getDaysLeft() {
-    const d = new Date();
-    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-    return Math.max(1, last - d.getDate() + 1);
-  }
+  $('insights').innerHTML = insights(c).map(x => `<div class="ins ${x.c}"><i>${x.i}</i><div>${x.t}</div></div>`).join('');
 
-  // 3. ПОЛНЫЙ РЕНДЕР ВСЕХ ВКЛАДОК
-  function render() {
-    const daysLeft = getDaysLeft();
-    document.getElementById('daysPill').innerText = `Осталось ${daysLeft} дн.`;
-    document.getElementById('topSalaryVal').innerText = fmt(state.income);
+  // Ближайшие платежи (счета + мин. платежи по долгам)
+  const up = state.fixed.filter(i => !i.paid).map(i => `
+    <div class="it"><div class="il" onclick="toggleFixed('${i.id}')"><div class="cb">✓</div><div><div class="tt">${esc(i.title)}</div><div class="ss">до ${i.day || 10}-го числа</div></div></div>
+    <div class="ir"><span class="am">${fmt(i.amount)}</span><button class="ma" onclick="openFixed('${i.id}')">✏️</button></div></div>`)
+    .concat(state.debts.filter(d => rem(d) > 0 && !d.minPaid).map(d => `
+    <div class="it"><div class="il" onclick="toggleDebtMin('${d.id}')"><div class="cb">✓</div><div><div class="tt">${esc(d.title)} <span class="tag">ДОЛГ</span></div><div class="ss">минимальный платёж</div></div></div>
+    <div class="ir"><span class="am">${fmt(Math.min(d.min, rem(d)))}</span><button class="ma" onclick="openDebt('${d.id}')">✏️</button></div></div>`));
+  $('unpaidList').innerHTML = up.length ? up.join('') : '<div class="empty" style="color:var(--em)">✅ Все обязательные платежи закрыты!</div>';
 
-    const totalFixed = state.fixed.reduce((acc, i) => acc + Number(i.amount), 0);
-    const unpaidFixed = state.fixed.filter(i => !i.paid).reduce((acc, i) => acc + Number(i.amount), 0);
-    const totalLimitsMax = state.limits.reduce((acc, i) => acc + Number(i.limit), 0);
-    const totalLimitsSpent = state.limits.reduce((acc, i) => acc + Number(i.spent), 0);
-    const limitsRemaining = Math.max(0, totalLimitsMax - totalLimitsSpent);
+  $('historyList').innerHTML = state.history.length ? state.history.slice(0, 6).map(h =>
+    `<div class="log"><span>${esc(h.title)} <small>${esc(h.date)}</small></span><b style="color:${h.type === 'plus' ? 'var(--em)' : 'var(--tx)'}">${h.type === 'plus' ? '+' : '−'}${fmt(h.amount)}</b></div>`).join('')
+    : '<div class="empty">Операций пока нет</div>';
 
-    // Если по лимиту перерасход — учитываем фактическую трату
-    const effectiveLimitsCost = state.limits.reduce((acc, i) => acc + Math.max(Number(i.limit), Number(i.spent)), 0);
+  // Счета
+  $('fixedList').innerHTML = state.fixed.length ? state.fixed.map(i => `
+    <div class="it ${i.paid ? 'paid' : ''}"><div class="il" onclick="toggleFixed('${i.id}')"><div class="cb">✓</div><div><div class="tt">${esc(i.title)}</div><div class="ss">${i.paid ? 'Оплачено ✅' : 'Списание ' + (i.day || 10) + '-го числа'}</div></div></div>
+    <div class="ir"><span class="am">${fmt(i.amount)}</span><button class="ma" onclick="openFixed('${i.id}')">✏️</button><button class="ma" onclick="delItem('fixed','${i.id}')">✕</button></div></div>`).join('')
+    : '<div class="empty">Добавь аренду, ЖКХ и подписки — они войдут в расчёт дня.</div>';
 
-    const targetSavings = Math.round(state.income * (state.savingsGoalPct / 100));
-    const effectiveSavings = Math.max(targetSavings, Number(state.actualSaved || 0));
+  // Лимиты
+  $('limList').innerHTML = state.limits.length ? state.limits.map(i => {
+    const p = Math.min(100, Math.round(i.spent / Math.max(1, i.limit) * 100)), r = i.limit - i.spent;
+    const col = p >= 100 ? 'linear-gradient(90deg,#FB7185,#F43F5E)' : p >= 75 ? 'linear-gradient(90deg,#FBBF24,#F59E0B)' : '';
+    return `<div class="glass"><div class="row sp" style="align-items:flex-start"><div><div class="tt">${esc(i.title)}</div>
+      <div class="ss">${r >= 0 ? 'Доступно: <b style="color:#fff">' + fmt(r) + '</b>' : '<b style="color:var(--rd)">Перерасход: ' + fmt(-r) + '</b>'}</div></div>
+      <div class="ir"><div style="text-align:right;margin-right:4px"><div class="am" style="margin:0">${fmt(i.spent)}</div><div class="ss" style="margin:0">из ${fmt(i.limit)}</div></div>
+      <button class="ma" onclick="openLimit('${i.id}')">✏️</button><button class="ma" onclick="delItem('limits','${i.id}')">✕</button></div></div>
+      <div class="pb"><div class="pf" data-w="${p}" style="${col ? 'background:' + col : ''}"></div></div>
+      <div class="chips"><button class="chip" onclick="quickSpend('${i.id}',300)">+300</button><button class="chip" onclick="quickSpend('${i.id}',500)">+500</button><button class="chip" onclick="quickSpend('${i.id}',1000)">+1000</button><button class="chip" onclick="quickSpend('${i.id}',-300)">−300</button><button class="chip" style="color:var(--em)" onclick="openSpend('${i.id}')">Своя</button></div></div>`;
+  }).join('') : '<div class="glass empty">Добавь категории: продукты, транспорт, кафе.</div>';
 
-    const freeMonthlyPool = state.income - totalFixed - effectiveLimitsCost - effectiveSavings;
-    const safeDaily = Math.max(0, Math.floor(freeMonthlyPool / daysLeft));
+  // Долги
+  const ds = state.debts.slice().sort((a, b) => (rem(a) > 0 ? 0 : 1) - (rem(b) > 0 ? 0 : 1) || b.rate - a.rate || rem(a) - rem(b));
+  const tTotal = state.debts.reduce((a, d) => a + Number(d.total), 0), tPaid = state.debts.reduce((a, d) => a + Math.min(Number(d.paid), Number(d.total)), 0);
+  const tMin = state.debts.filter(d => rem(d) > 0).reduce((a, d) => a + Number(d.min), 0);
+  $('debtSummary').innerHTML = state.debts.length ? `<div class="row sp"><div><div class="lbl">Осталось выплатить</div><div class="big">${fmt(tTotal - tPaid)}</div></div>
+    <div style="text-align:right"><div class="lbl">Мин. платежи / мес</div><div class="big" style="color:#C4B5FD">${fmt(tMin)}</div></div></div>
+    <div class="pb"><div class="pf" data-w="${tTotal ? Math.round(tPaid / tTotal * 100) : 0}"></div></div><div class="ss">Выплачено ${fmt(tPaid)} из ${fmt(tTotal)}. Метод «лавина»: сначала долг с самой высокой ставкой.</div>`
+    : '<div class="empty">Долгов нет — или ты ещё их не внёс. Добавь кредитки и рассрочки, и приложение построит план освобождения.</div>';
+  $('debtList').innerHTML = ds.map((d, idx) => {
+    const r = rem(d), p = d.total > 0 ? Math.min(100, Math.round(Math.min(d.paid, d.total) / d.total * 100)) : 100, done = r <= 0;
+    return `<div class="glass ${d.minPaid ? 'paid' : ''}"><div class="row sp" style="align-items:flex-start"><div><div class="tt">${esc(d.title)}${done ? '<span class="tag e">ЗАКРЫТ</span>' : idx === 0 ? '<span class="tag">ПРИОРИТЕТ №1</span>' : ''}</div>
+      <div class="ss">${done ? 'Свобода! 🎉' : `Остаток <b style="color:#fff">${fmt(r)}</b>${d.rate ? ' · ставка ' + d.rate + '%' : ''}`}</div></div>
+      <div class="ir"><button class="ma" onclick="openDebt('${d.id}')">✏️</button><button class="ma" onclick="delItem('debts','${d.id}')">✕</button></div></div>
+      <div class="pb"><div class="pf" data-w="${p}" style="background:linear-gradient(90deg,#8B5CF6,#34D399)"></div></div>
+      <div class="row sp ss" style="margin:0 0 10px"><span>Выплачено ${fmt(Math.min(d.paid, d.total))} (${p}%)</span><span>${done ? '' : 'Закрою за ~' + mon(eta(r, d.min))}</span></div>
+      ${done ? '' : `<div class="row sp"><div class="il" onclick="toggleDebtMin('${d.id}')"><div class="cb">✓</div><div><div class="tt" style="font-size:12.5px">Мин. платёж ${fmt(d.min)}</div><div class="ss">${d.minPaid ? 'Внесён в этом месяце' : 'ещё не внесён'}</div></div></div>
+      <button class="btn sm vi" onclick="openExtra('${d.id}')">⚡ Досрочно</button></div>`}</div>`;
+  }).join('');
 
-    const safeEl = document.getElementById('safeDailyVal');
-    safeEl.innerText = fmt(safeDaily);
-    safeEl.style.color = freeMonthlyPool < 0 ? 'var(--red)' : '#ffffff';
+  renderBal(c); renderFc(c); renderArch();
+  if (!skipVault) renderVault(c);
+  bars();
+}
 
-    document.getElementById('freeMonthlySub').innerText = freeMonthlyPool >= 0
-      ? `Свободный остаток (профицит): ${fmt(freeMonthlyPool)}`
-      : `⚠️ Дефицит бюджета: ${fmt(freeMonthlyPool)}`;
+function renderVault(c) {
+  c = c || calc();
+  const sv = Number(state.actualSaved) || 0, tg2 = Number(state.savingsGoalTarget) || 0, p = tg2 > 0 ? Math.min(100, Math.round(sv / tg2 * 100)) : 0;
+  const per = Math.max(0, Math.round(state.income * state.savingsGoalPct / 100));
+  $('vaultCard').innerHTML = `<div class="row sp"><div class="row"><div class="logo" style="width:46px;height:46px;font-size:22px">🏦</div><div><div class="tt">${esc(state.savingsGoalName)}</div><div class="ss">Цель: ${fmt(tg2)}</div></div></div><button class="ma" onclick="openGoal()">✏️</button></div>
+    <div class="hv" style="font-size:34px;margin:14px 0 0">${fmt(sv)}</div>
+    <div class="pb" style="height:12px"><div class="pf" data-w="${p}"></div></div>
+    <div class="row sp ss" style="margin-bottom:14px"><span>${p}% накоплено</span><span>${sv >= tg2 && tg2 > 0 ? 'Цель достигнута 🎉' : per > 0 && tg2 > sv ? 'Ещё ~' + mon(Math.ceil((tg2 - sv) / per)) + ' при ' + fmt(per) + '/мес' : 'Осталось ' + fmt(Math.max(0, tg2 - sv))}</span></div>
+    <div class="row"><button class="btn" style="flex:1" onclick="openDeposit()">＋ Пополнить</button><button class="btn dg" style="flex:1" onclick="openWithdraw()">Забрать</button></div>`;
+  $('pctLbl').textContent = state.savingsGoalPct + '% · ' + fmt(per);
+  $('pctRange').value = state.savingsGoalPct;
+}
+const ym = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+function rollover() {
+  const m = ym();
+  if (!state.month) { state.month = m; saveState(); return; }
+  if (state.month === m) return;
+  const spent = state.limits.reduce((a, i) => a + Number(i.spent), 0) + state.fixed.filter(i => i.paid).reduce((a, i) => a + Number(i.amount), 0);
+  state.archive.unshift({ m: state.month, earned: Number(state.earned) || 0, spent });
+  state.archive = state.archive.slice(0, 12);
+  const base = state.archive.slice(0, 3).map(a => a.earned).filter(x => x > 0);
+  if (base.length) state.income = Math.round(base.reduce((a, b) => a + b, 0) / base.length);
+  state.fixed.forEach(i => i.paid = false); state.limits.forEach(i => i.spent = 0); state.debts.forEach(d => d.minPaid = false);
+  state.extraDebt = 0; state.earned = 0; state.month = m;
+  addLog('Новый месяц: счета и лимиты обнулены', 0, 'plus'); saveState();
+}
+function renderBal() {
+  $('balCard').innerHTML = `<div class="row sp"><div><div class="lbl">Реально на руках</div><div class="big">${state.balanceSet ? fmt(state.balance) : 'не указано'}</div>
+    <div class="ss">${state.balanceSet ? 'Сверка: ' + (state.balanceChecked || '—') : 'Карты + наличные, без копилки'}</div></div><button class="btn sm" onclick="openBalance()">${state.balanceSet ? 'Сверить' : 'Указать'}</button></div>`;
+}
+function renderFc(c) {
+  const L = state.shiftLog.slice(0, 10), avg = L.length ? Math.round(L.reduce((a, x) => a + x, 0) / L.length) : 0;
+  const need = c.mand + c.limCost + c.eff, earned = Number(state.earned) || 0, gap = Math.max(0, need - earned), n = avg > 0 ? Math.ceil(gap / avg) : 0;
+  $('fcCard').innerHTML = `<div class="h2">Прогноз по сменам</div><div class="row sp"><div><div class="lbl">Заработано в этом месяце</div><div class="big">${fmt(earned)}</div></div>
+    <div style="text-align:right"><div class="lbl">Средний чек смены</div><div class="big" style="color:#C4B5FD">${avg ? fmt(avg) : '—'}</div></div></div>
+    <div class="pb"><div class="pf" data-w="${need > 0 ? Math.min(100, Math.round(earned / need * 100)) : 0}"></div></div>
+    <div class="ss">${!avg ? 'Внеси несколько смен через «＋ Смена» — посчитаю, сколько их нужно.' : gap <= 0 ? 'Все платежи и цели месяца уже покрыты заработком 🎉' : `Нужно ещё ${fmt(gap)} ≈ <b style="color:#fff">${n} смен</b> по среднему чеку, чтобы закрыть платежи, лимиты и копилку.`}</div>`;
+}
+function renderArch() {
+  const a = state.archive.slice(0, 3);
+  $('archCard').innerHTML = '<div class="h2">Прошлые месяцы</div>' + (a.length ? a.map(x => `<div class="log"><span>${new Date(x.m + '-01').toLocaleDateString('ru-RU', { month: 'long' })}</span><b>+${fmt(x.earned)} · −${fmt(x.spent)}</b></div>`).join('') : '<div class="empty">Архив появится после первого закрытого месяца.</div>');
+}
+function setPct(v) { state.savingsGoalPct = Number(v); saveState(); render(true); renderVault(); hp('light'); }
 
-    document.getElementById('heroReserved').innerText = fmt(unpaidFixed);
-    document.getElementById('heroLimitsLeft').innerText = fmt(limitsRemaining);
-    document.getElementById('heroPct').innerText = state.savingsGoalPct;
-    document.getElementById('heroSaved').innerText = fmt(effectiveSavings);
+function tab(id, btn) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(t => t.classList.remove('on'));
+  $('tab-' + id).classList.add('on'); btn.classList.add('on'); scroller.scrollTop = 0; hp('light'); bars();
+}
 
-    // Полоса распределения
-    const base = Math.max(1, state.income);
-    document.getElementById('barFixed').style.width = Math.min(100, (totalFixed / base) * 100) + '%';
-    document.getElementById('barLimits').style.width = Math.min(100, (effectiveLimitsCost / base) * 100) + '%';
-    document.getElementById('barSavings').style.width = Math.min(100, (effectiveSavings / base) * 100) + '%';
-    document.getElementById('barFree').style.width = Math.max(0, (freeMonthlyPool / base) * 100) + '%';
+// 5. ШТОРКИ (BOTTOM SHEETS)
+let shSave = null, shLive = null;
+function onLive() { if (shLive) shLive(); }
+function closeSheet() { $('bg').classList.remove('on'); shSave = null; shLive = null; }
+const gv = k => $('f_' + k).value;
+const gn = k => Number(gv(k)) || 0;
+function openSheet(o) {
+  $('shTitle').textContent = o.title;
+  $('shBody').innerHTML = (o.fields || []).map(f => `<label class="fl">${f.l}<input id="f_${f.k}" type="${f.t || 'number'}" ${f.t === 'text' ? '' : 'inputmode="decimal"'} value="${esc(f.v ?? '')}" placeholder="${esc(f.p || '')}"></label>`).join('') + (o.html || '');
+  const b = $('shSave'); b.textContent = o.label || 'Сохранить'; b.className = 'btn ' + (o.cls || '');
+  shSave = o.save; shLive = o.live || null; b.onclick = () => { if (shSave && shSave() !== false) { hp('ok'); } };
+  $('bg').classList.add('on'); hp('light'); if (shLive) shLive();
+}
 
-    document.getElementById('legFixed').innerText = fmt(totalFixed);
-    document.getElementById('legLimits').innerText = fmt(effectiveLimitsCost);
-    document.getElementById('legSavings').innerText = fmt(effectiveSavings);
-    document.getElementById('legFree').innerText = fmt(freeMonthlyPool);
+// Реальный баланс и быстрая трата
+function openBalance() {
+  openSheet({ title: '💳 Сколько у тебя реально сейчас', label: 'Сохранить остаток', fields: [{ k: 'v', l: 'Остаток на карте и наличными, ₽', v: state.balanceSet ? state.balance : '' }],
+    html: '<div class="ins" id="bInfo"></div>',
+    live() { const el = $('bInfo'), d = gn('v') - state.balance;
+      if (!state.balanceSet || gv('v') === '') { el.innerHTML = '<i>💡</i><div>Впиши точную сумму со всех карт и наличных (без копилки). Дальше приложение само вычитает траты и платежи.</div>'; return; }
+      el.innerHTML = d < 0 ? `<i>🔎</i><div>Записано ${fmt(state.balance)}, по факту меньше на <b>${fmt(-d)}</b> — это незаписанные траты.</div>` : d > 0 ? `<i>🔎</i><div>По факту больше на <b>${fmt(d)}</b> — приход, который не был записан.</div>` : '<i>✅</i><div>Всё сходится!</div>'; },
+    save() { if (gv('v') === '' || gn('v') < 0) return false; const v = gn('v'), d = v - state.balance;
+      if (!state.balanceSet) addLog('Стартовый остаток указан', v, 'plus');
+      else if (d !== 0) addLog(d < 0 ? 'Незаписанные траты (сверка)' : 'Незаписанный приход (сверка)', Math.abs(d), d < 0 ? 'minus' : 'plus');
+      state.balance = v; state.balanceSet = true; state.balanceChecked = new Date().toLocaleDateString('ru-RU'); commit(); closeSheet(); } });
+}
+let curCat = '';
+function pickCat(id) { curCat = id; document.querySelectorAll('#catChips .chip').forEach(b => b.classList.toggle('on', b.dataset.id === id)); hp('light'); }
+function parseSms(t) {
+  const m = t.match(/(\d[\d\s]*(?:[.,]\d{1,2})?)\s*(?:₽|р\b|р\.|руб|RUR|RUB)/i) || t.match(/(?:покупка|оплата|списание|снятие)[^\d]{0,15}(\d[\d\s]*(?:[.,]\d{1,2})?)/i);
+  return m ? Number(m[1].replace(/\s/g, '').replace(',', '.')) || 0 : 0;
+}
+function openExpense() {
+  if (!state.limits.length) { alert('Сначала добавь категорию лимита во вкладке «Лимиты».'); return; }
+  curCat = state.limits.some(l => l.id === state.lastCat) ? state.lastCat : state.limits[0].id;
+  openSheet({ title: '⚡ Быстрая трата', label: 'Записать трату', fields: [{ k: 'v', l: 'Сумма, ₽', p: '450' }, { k: 'n', l: 'Заметка (необязательно)', t: 'text', p: 'Кофе' }, { k: 'sms', l: 'Или вставь SMS из банка', t: 'text', p: 'Покупка 450р MAGNIT…' }],
+    html: `<div class="lbl" style="margin-bottom:6px">КАТЕГОРИЯ</div><div class="chips" id="catChips" style="margin-bottom:12px">${state.limits.map(l => `<button class="chip ${l.id === curCat ? 'on' : ''}" data-id="${l.id}" onclick="pickCat('${l.id}')">${esc(l.title)}</button>`).join('')}</div>`,
+    live() { const t = gv('sms'); if (t && gv('v') === '') { const a = parseSms(t); if (a > 0) $('f_v').value = a; } },
+    save() { const v = gn('v'), i = state.limits.find(x => x.id === curCat); if (v <= 0 || !i) return false;
+      i.spent = Number(i.spent) + v; state.balance -= v; state.lastCat = i.id; addLog((gv('n').trim() || i.title) + ' · ' + i.title, v, 'minus');
+      hp(i.spent > i.limit ? 'warn' : 'ok'); commit(); closeSheet(); } });
+  setTimeout(() => { const e = $('f_v'); if (e) e.focus(); }, 350);
+}
 
-    // 1. Вкладка Обзор: Неоплаченные счета
-    const unpaid = state.fixed.filter(i => !i.paid);
-    const unpaidBox = document.getElementById('overviewUnpaidList');
-    if (unpaid.length === 0) {
-      unpaidBox.innerHTML = `<div style="color:var(--green); font-size:13px; padding:6px 0;">✅ Все обязательные счета оплачены!</div>`;
-    } else {
-      unpaidBox.innerHTML = unpaid.map(item => `
-        <div class="item-row">
-          <div class="item-left" onclick="toggleFixed('${item.id}')">
-            <div class="checkbox-ui">✓</div>
-            <div>
-              <div class="item-title">${item.title}</div>
-              <div class="item-sub">Оплата до ${item.day || 10}-го числа</div>
-            </div>
-          </div>
-          <div class="item-right">
-            <span class="item-amount">${fmt(item.amount)}</span>
-            <button class="mini-act-btn" onclick="openFixedModal('${item.id}')" title="Редактировать">✏️</button>
-          </div>
-        </div>
-      `).join('');
-    }
+// Доход
+function openIncome() { openSheet({ title: '💰 Месячный доход', fields: [{ k: 'v', l: 'Плановый доход за месяц, ₽ (вырастет сам, если заработаешь больше)', v: state.income }],
+  save() { const v = gn('v'); if (v < 0) return false; state.income = v; addLog('Обновлён месячный доход', v, 'plus'); commit(); closeSheet(); } }); }
 
-    // История операций
-    const histBox = document.getElementById('historyList');
-    if (!state.history || state.history.length === 0) {
-      histBox.innerHTML = `<div style="color:var(--text-muted); font-size:12px;">Операций пока нет</div>`;
-    } else {
-      histBox.innerHTML = state.history.slice(0, 6).map(h => `
-        <div class="log-item">
-          <span>${h.title} <small style="color:var(--text-muted)">(${h.date})</small></span>
-          <b style="color:${h.type === 'plus' ? 'var(--green)' : 'var(--text-main)'}">
-            ${h.type === 'plus' ? '+' : '-'}${fmt(h.amount)}
-          </b>
-        </div>
-      `).join('');
-    }
+// Smart Shift Splitter
+function openShift() {
+  openSheet({ title: '⚡ Приход со смены', label: 'Распределить и сохранить', fields: [
+    { k: 'sum', l: 'Сумма за смену, ₽', p: '5000' }, { k: 'note', l: 'Заметка', t: 'text', v: '', p: 'Смена' },
+    { k: 'rp', l: '% в резерв (счета и долги)', v: state.reservePct }, { k: 'sp', l: '% в копилку (сначала заплати себе)', v: state.savingsGoalPct }],
+    html: `<div class="sp3"><div id="s1" style="background:#8B5CF6"></div><div id="s2" style="background:#FBBF24"></div><div id="s3" style="background:#34D399"></div></div>
+    <div class="pr"><span>🛡️ Резерв на счета и долги</span><b id="p1"></b></div><div class="pr"><span>🏦 Неприкосновенная копилка</span><b id="p2"></b></div><div class="pr"><span>🎯 В безопасный бюджет</span><b id="p3" style="color:var(--em)"></b></div>`,
+    live() { const s = gn('sum'), a = Math.max(0, Math.min(100, gn('rp'))), b = Math.max(0, Math.min(100 - a, gn('sp')));
+      const r = Math.round(s * a / 100), v = Math.round(s * b / 100), f = s - r - v;
+      $('p1').textContent = fmt(r); $('p2').textContent = fmt(v); $('p3').textContent = fmt(f);
+      $('s1').style.flex = a || 0.001; $('s2').style.flex = b || 0.001; $('s3').style.flex = Math.max(0.001, 100 - a - b); },
+    save() { const s = gn('sum'), a = gn('rp'), b = gn('sp'); if (s <= 0 || a < 0 || b < 0 || a + b > 100) return false;
+      const r = Math.round(s * a / 100), v = Math.round(s * b / 100);
+      state.earned = (Number(state.earned) || 0) + s; state.income = Math.max(state.income, state.earned); state.balance += s - v; state.shiftLog.unshift(s); state.shiftLog = state.shiftLog.slice(0, 40); state.actualSaved = (Number(state.actualSaved) || 0) + v; state.reserveBalance = (Number(state.reserveBalance) || 0) + r;
+      state.reservePct = a; state.savingsGoalPct = b;
+      addLog((gv('note').trim() || 'Приход со смены') + ` (в резерв ${fmt(r)}, в копилку ${fmt(v)})`, s, 'plus'); commit(); closeSheet(); } });
+}
 
-    // 2. Вкладка Обязательные платежи (с кнопками ✏️ и ✕)
-    const fixedBox = document.getElementById('fixedListContainer');
-    fixedBox.innerHTML = state.fixed.map(item => `
-      <div class="item-row ${item.paid ? 'paid' : ''}">
-        <div class="item-left" onclick="toggleFixed('${item.id}')">
-          <div class="checkbox-ui">✓</div>
-          <div>
-            <div class="item-title">${item.title}</div>
-            <div class="item-sub">${item.paid ? 'Оплачено ✅' : `Списание ${item.day || 10}-го числа`}</div>
-          </div>
-        </div>
-        <div class="item-right">
-          <span class="item-amount">${fmt(item.amount)}</span>
-          <button class="mini-act-btn" onclick="openFixedModal('${item.id}')" title="Изменить">✏️</button>
-          <button class="mini-act-btn" onclick="deleteFixed('${item.id}')" title="Удалить">✕</button>
-        </div>
-      </div>
-    `).join('');
+// Счета
+function toggleFixed(id) { const i = state.fixed.find(x => x.id === id); if (!i) return; i.paid = !i.paid; state.balance += i.paid ? -i.amount : i.amount;
+  state.reserveBalance = Math.max(0, (Number(state.reserveBalance) || 0) + (i.paid ? -i.amount : i.amount));
+  if (i.paid) addLog('Оплачено: ' + i.title, i.amount, 'minus'); hp(i.paid ? 'ok' : 'light'); commit(); }
+function openFixed(id) { const i = id ? state.fixed.find(x => x.id === id) : null;
+  openSheet({ title: i ? '✏️ Редактировать платёж' : '➕ Новый обязательный счёт', fields: [
+    { k: 't', l: 'Название', t: 'text', v: i?.title, p: 'Аренда' }, { k: 'a', l: 'Сумма, ₽', v: i?.amount }, { k: 'd', l: 'День месяца', v: i?.day || 10 }],
+    save() { const t = gv('t').trim(), a = gn('a'); if (!t || a < 0) return false;
+      if (i) { i.title = t; i.amount = a; i.day = gn('d') || 10; } else state.fixed.push({ id: 'f_' + Date.now(), title: t, amount: a, day: gn('d') || 10, paid: false });
+      commit(); closeSheet(); } }); }
 
-    // 3. Вкладка Лимиты (с быстрыми чипами + редактированием ✏️)
-    const limitsBox = document.getElementById('limitsListContainer');
-    limitsBox.innerHTML = state.limits.map(item => {
-      const pct = Math.min(100, Math.round((item.spent / Math.max(1, item.limit)) * 100));
-      const barColor = pct >= 100 ? 'var(--red)' : pct >= 75 ? 'var(--amber)' : 'var(--green)';
-      const rem = item.limit - item.spent;
-      return `
-        <div class="limit-box">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-            <div>
-              <div style="font-weight:800; font-size:14px;">${item.title}</div>
-              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
-                ${rem >= 0 ? `Доступно: <b style="color:#fff">${fmt(rem)}</b>` : `<b style="color:var(--red)">Перерасход: ${fmt(Math.abs(rem))}</b>`}
-              </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <div style="text-align:right; margin-right:4px;">
-                <div style="font-size:13px; font-weight:800;">${fmt(item.spent)}</div>
-                <div style="font-size:11px; color:var(--text-muted);">из ${fmt(item.limit)}</div>
-              </div>
-              <button class="mini-act-btn" onclick="openLimitModal('${item.id}')" title="Редактировать">✏️</button>
-              <button class="mini-act-btn" onclick="deleteLimit('${item.id}')" title="Удалить">✕</button>
-            </div>
-          </div>
+// Лимиты
+function openLimit(id) { const i = id ? state.limits.find(x => x.id === id) : null;
+  openSheet({ title: i ? '✏️ Редактировать категорию' : '➕ Новая категория', fields: [
+    { k: 't', l: 'Название', t: 'text', v: i?.title, p: 'Кафе' }, { k: 'm', l: 'Лимит на месяц, ₽', v: i?.limit }, { k: 's', l: 'Уже потрачено, ₽', v: i?.spent || 0 }],
+    save() { const t = gv('t').trim(), m = gn('m'); if (!t || m < 0) return false;
+      if (i) { i.title = t; i.limit = m; i.spent = Math.max(0, gn('s')); } else state.limits.push({ id: 'l_' + Date.now(), title: t, limit: m, spent: Math.max(0, gn('s')) });
+      commit(); closeSheet(); } }); }
+function quickSpend(id, d) { const i = state.limits.find(x => x.id === id); if (!i) return;
+  const b4 = Number(i.spent); i.spent = Math.max(0, b4 + d); state.balance -= i.spent - b4; state.lastCat = id; if (d > 0) addLog(i.title, d, 'minus'); hp(i.spent > i.limit ? 'warn' : 'light'); commit(); }
+function openSpend(id) { const i = state.limits.find(x => x.id === id); if (!i) return;
+  openSheet({ title: 'Трата: ' + i.title, fields: [{ k: 'v', l: 'Сумма (минус — вернуть), ₽', p: '750' }], save() { const v = gn('v'); if (!v) return false; quickSpend(id, v); closeSheet(); } }); }
 
-          <div class="progress-bar">
-            <div class="progress-fill" style="width:${pct}%; background:${barColor};"></div>
-          </div>
+// Долги
+function toggleDebtMin(id) { const d = state.debts.find(x => x.id === id); if (!d) return;
+  d.minPaid = !d.minPaid; const m = Math.min(Number(d.min), rem(d) + (d.minPaid ? 0 : Number(d.min)));
+  if (d.minPaid) { const pay = Math.min(Number(d.min), rem(d)); d.paid = Number(d.paid) + pay; d.lastMin = pay; state.balance -= pay; addLog('Мин. платёж: ' + d.title, pay, 'minus'); hp('ok'); }
+  else { const u = d.lastMin || Number(d.min); d.paid = Math.max(0, Number(d.paid) - u); state.balance += u; hp('light'); }
+  commit(); }
+function openDebt(id) { const d = id ? state.debts.find(x => x.id === id) : null;
+  openSheet({ title: d ? '✏️ Редактировать долг' : '⛓️ Новый долг', fields: [
+    { k: 't', l: 'Название (кредитка, рассрочка…)', t: 'text', v: d?.title }, { k: 'tot', l: 'Общий долг, ₽', v: d?.total }, { k: 'pd', l: 'Уже выплачено, ₽', v: d?.paid || 0 },
+    { k: 'mn', l: 'Минимальный платёж в месяц, ₽', v: d?.min }, { k: 'rt', l: 'Ставка, % годовых (приоритет)', v: d?.rate || 0 }],
+    save() { const t = gv('t').trim(), tot = gn('tot'), mn = gn('mn'); if (!t || tot <= 0 || mn < 0) return false;
+      const o = { title: t, total: tot, paid: Math.max(0, gn('pd')), min: mn, rate: gn('rt') };
+      if (d) Object.assign(d, o); else state.debts.push({ id: 'd_' + Date.now(), minPaid: false, ...o });
+      commit(); closeSheet(); } }); }
+function openExtra(id) { const d = state.debts.find(x => x.id === id); if (!d) return; const c = calc(), r = rem(d);
+  openSheet({ title: '⚡ Досрочный платёж', label: 'Внести платёж', cls: 'vi', fields: [{ k: 'v', l: `Сумма, ₽ (остаток долга ${fmt(r)})`, p: String(Math.min(r, Math.max(0, c.free))) }],
+    html: `<div class="ss" style="margin:-4px 0 10px">Свободный остаток месяца: <b style="color:var(--em)">${fmt(Math.max(0, c.free))}</b></div><div class="ins g" id="exInfo"></div>`,
+    live() { const x = Math.min(r, gn('v')), now = eta(r, d.min), nw = eta(r - x, d.min);
+      $('exInfo').innerHTML = x > 0 ? `<i>🚀</i><div>Долг «${esc(d.title)}»: ${mon(now)} → <b>${mon(nw)}</b>${now !== Infinity && now > nw ? ', быстрее на ' + (now - nw) + ' мес.' : ''}. Останется ${fmt(r - x)}.</div>` : '<i>💡</i><div>Введи сумму — покажу, насколько быстрее закроешь долг.</div>'; },
+    save() { const x = gn('v'); if (x <= 0 || x > r) return false;
+      d.paid = Number(d.paid) + x; state.balance -= x; state.extraDebt = (Number(state.extraDebt) || 0) + x; addLog('Досрочно: ' + d.title, x, 'minus');
+      hp('ok'); commit(); closeSheet(); } }); }
 
-          <div class="chips-row">
-            <button class="chip-btn" onclick="quickSpend('${item.id}', 300)">+300</button>
-            <button class="chip-btn" onclick="quickSpend('${item.id}', 500)">+500</button>
-            <button class="chip-btn" onclick="quickSpend('${item.id}', 1000)">+1000</button>
-            <button class="chip-btn" onclick="quickSpend('${item.id}', -300)">-300</button>
-            <button class="chip-btn" style="background:rgba(59,130,246,0.2); border-color:rgba(59,130,246,0.4);" onclick="openCustomSpendModal('${item.id}')">Своя</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+// Копилка
+function openGoal() { openSheet({ title: '🏦 Цель копилки', fields: [{ k: 'n', l: 'Название цели', t: 'text', v: state.savingsGoalName }, { k: 'tg', l: 'Сумма цели, ₽', v: state.savingsGoalTarget }, { k: 'sv', l: 'Накоплено сейчас, ₽', v: state.actualSaved }],
+  save() { const n = gv('n').trim(), t = gn('tg'), s = gn('sv'); if (!n || t <= 0 || s < 0) return false;
+    state.savingsGoalName = n; state.savingsGoalTarget = t; state.actualSaved = s; commit(); closeSheet(); } }); }
+function openDeposit() { openSheet({ title: '＋ Пополнить копилку', fields: [{ k: 'v', l: 'Сумма, ₽', p: '2000' }],
+  save() { const v = gn('v'); if (v <= 0) return false; state.actualSaved = (Number(state.actualSaved) || 0) + v; state.balance -= v; addLog('В копилку: ' + state.savingsGoalName, v, 'plus'); commit(); closeSheet(); } }); }
+function openWithdraw() { openSheet({ title: '🔒 Забрать из копилки', cls: 'dg', label: 'Продолжить', fields: [{ k: 'v', l: `Сумма, ₽ (в сейфе ${fmt(state.actualSaved)})` }],
+  html: '<div class="ins w"><i>🧠</i><div>Подожди 10 секунд: это правда необходимо, или импульс? Деньги в сейфе — твоя свобода.</div></div>',
+  save() { const v = gn('v'); if (v <= 0 || v > state.actualSaved) return false; hp('warn');
+    ask(`Забрать ${fmt(v)} из копилки?`, () => { state.actualSaved -= v; state.balance += v; addLog('Из копилки: ' + state.savingsGoalName, v, 'minus'); commit(); closeSheet(); }); return false; } }); }
 
-    // 4. Вкладка Ползунки (Интерактивный планировщик из первого прототипа)
-    const totalOut = totalFixed + effectiveLimitsCost;
-    const realRate = state.income > 0 ? Math.max(0, Math.round(((state.income - totalOut) / state.income) * 100)) : 0;
-    document.getElementById('sliderSavingsRate').innerText = `Потенциал копилки: ${realRate}%`;
+// Удаление с подтверждением (для всех списков)
+function delItem(arr, id) { const i = state[arr].find(x => x.id === id); if (!i) return; hp('warn');
+  ask(`Удалить «${i.title}»?`, () => { state[arr] = state[arr].filter(x => x.id !== id); commit(); hp('ok'); }); }
+function clearHistory() { state.history = []; commit(); }
 
-    let slidersHtml = `
-      <div class="slider-group">
-        <div class="slider-top">
-          <span>💰 Месячный доход</span>
-          <span style="color:var(--green)">${fmt(state.income)}</span>
-        </div>
-        <input type="range" min="15000" max="300000" step="1000" value="${state.income}"
-          oninput="updateIncomeSlider(this.value)">
-      </div>
+// Меню разработчика
+function openDev() {
+  openSheet({ title: '</> Данные и синхронизация', label: 'Копировать JSON', cls: 'gh',
+    html: `<div class="ss" style="margin-bottom:8px">User ID: <b style="color:#fff">${esc(USER_ID)}</b></div><textarea id="devJson" readonly>${esc(JSON.stringify(state, null, 2))}</textarea>
+    <button class="btn gh" onclick="sendBot()">Отправить в бота (sendData)</button><button class="btn dg" onclick="resetAll()">Сбросить к стандартным</button>`,
+    save() { const a = $('devJson'); a.select(); try { navigator.clipboard.writeText(a.value); } catch (e) { document.execCommand('copy'); } hp('ok'); return false; } });
+}
+function sendBot() { if (tg && typeof tg.sendData === 'function') tg.sendData(JSON.stringify(state)); else alert('sendData доступна при открытии через кнопку Telegram-бота.'); }
+function resetAll() { ask('Сбросить все цифры к стандартным?', () => { state = clone(DEFAULT_STATE); commit(); closeSheet(); }); }
 
-      <div class="slider-group">
-        <div class="slider-top">
-          <span>🎯 Процент в копилку</span>
-          <span style="color:var(--green)">${state.savingsGoalPct}% (${fmt(targetSavings)})</span>
-        </div>
-        <input type="range" min="0" max="60" step="1" value="${state.savingsGoalPct}"
-          oninput="updateSavingsPctSlider(this.value)">
-      </div>
-    `;
-
-    state.fixed.forEach(item => {
-      slidersHtml += `
-        <div class="slider-group">
-          <div class="slider-top">
-            <span>📌 ${item.title}</span>
-            <span style="color:#93c5fd">${fmt(item.amount)}</span>
-          </div>
-          <input type="range" min="0" max="100000" step="500" value="${item.amount}"
-            oninput="updateFixedSlider('${item.id}', this.value)">
-        </div>
-      `;
-    });
-
-    state.limits.forEach(item => {
-      slidersHtml += `
-        <div class="slider-group">
-          <div class="slider-top">
-            <span>🛒 Лимит: ${item.title}</span>
-            <span style="color:#fcd34d">${fmt(item.limit)}</span>
-          </div>
-          <input type="range" min="0" max="80000" step="500" value="${item.limit}"
-            oninput="updateLimitSlider('${item.id}', this.value)">
-        </div>
-      `;
-    });
-
-    document.getElementById('slidersDynamicContainer').innerHTML = slidersHtml;
-  }
-
-  // 4. ДЕЙСТВИЯ И РЕДАКТИРОВАНИЕ ВСЕХ ЭЛЕМЕНТОВ
-  function switchTab(tabId, btn) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
-    if (btn) btn.classList.add('active');
-  }
-
-  function closeModals() {
-    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('open'));
-  }
-
-  // Приход со смены
-  function openShiftModal() {
-    document.getElementById('inpShiftSum').value = '';
-    document.getElementById('inpShiftNote').value = '';
-    document.getElementById('shiftAutoPct').innerText = state.savingsGoalPct + '%';
-    document.getElementById('modalShift').classList.add('open');
-  }
-
-  function saveShiftIncome() {
-    const val = Number(document.getElementById('inpShiftSum').value);
-    const note = document.getElementById('inpShiftNote').value.trim() || 'Приход со смены';
-    const autoSave = document.getElementById('chkShiftAutoSave').checked;
-    if (val > 0) {
-      state.income += val;
-      if (autoSave) {
-        const toSave = Math.round(val * (state.savingsGoalPct / 100));
-        state.actualSaved = Number(state.actualSaved || 0) + toSave;
-      }
-      addLog(note, val, 'plus');
-      saveState();
-      render();
-      closeModals();
-    }
-  }
-
-  // Редактирование общего дохода
-  function openEditTotalIncomeModal() {
-    document.getElementById('inpTotalIncome').value = state.income;
-    document.getElementById('modalTotalIncome').classList.add('open');
-  }
-
-  function saveTotalIncome() {
-    const val = Number(document.getElementById('inpTotalIncome').value);
-    if (!isNaN(val) && val >= 0) {
-      state.income = val;
-      addLog('Обновлен месячный доход', val, 'plus');
-      saveState();
-      render();
-      closeModals();
-    }
-  }
-
-  // Обязательные счета: Добавление и Редактирование
-  function toggleFixed(id) {
-    const item = state.fixed.find(i => i.id === id);
-    if (item) {
-      item.paid = !item.paid;
-      if (item.paid) addLog(`Оплачено: ${item.title}`, item.amount, 'minus');
-      saveState();
-      render();
-    }
-  }
-
-  function openFixedModal(id = null) {
-    if (id) {
-      const item = state.fixed.find(i => i.id === id);
-      if (!item) return;
-      document.getElementById('modalFixedHeader').innerText = '✏️ Редактировать платеж';
-      document.getElementById('inpFixedId').value = item.id;
-      document.getElementById('inpFixedTitle').value = item.title;
-      document.getElementById('inpFixedAmount').value = item.amount;
-      document.getElementById('inpFixedDay').value = item.day || 10;
-    } else {
-      document.getElementById('modalFixedHeader').innerText = '➕ Новый обязательный счет';
-      document.getElementById('inpFixedId').value = '';
-      document.getElementById('inpFixedTitle').value = '';
-      document.getElementById('inpFixedAmount').value = '';
-      document.getElementById('inpFixedDay').value = 10;
-    }
-    document.getElementById('modalFixed').classList.add('open');
-  }
-
-  function saveFixedModal() {
-    const id = document.getElementById('inpFixedId').value;
-    const title = document.getElementById('inpFixedTitle').value.trim();
-    const amount = Number(document.getElementById('inpFixedAmount').value);
-    const day = Number(document.getElementById('inpFixedDay').value) || 10;
-
-    if (!title || isNaN(amount) || amount < 0) return;
-
-    if (id) {
-      const item = state.fixed.find(i => i.id === id);
-      if (item) {
-        item.title = title;
-        item.amount = amount;
-        item.day = day;
-      }
-    } else {
-      state.fixed.push({ id: 'f_' + Date.now(), title, amount, day, paid: false });
-    }
-    saveState();
-    render();
-    closeModals();
-  }
-
-  function deleteFixed(id) {
-    state.fixed = state.fixed.filter(i => i.id !== id);
-    saveState();
-    render();
-  }
-
-  // Лимиты: Добавление, Редактирование и Списание
-  function openLimitModal(id = null) {
-    if (id) {
-      const item = state.limits.find(i => i.id === id);
-      if (!item) return;
-      document.getElementById('modalLimitHeader').innerText = '✏️ Редактировать категорию';
-      document.getElementById('inpLimitId').value = item.id;
-      document.getElementById('inpLimitTitle').value = item.title;
-      document.getElementById('inpLimitMax').value = item.limit;
-      document.getElementById('inpLimitSpent').value = item.spent;
-    } else {
-      document.getElementById('modalLimitHeader').innerText = '➕ Новая категория лимита';
-      document.getElementById('inpLimitId').value = '';
-      document.getElementById('inpLimitTitle').value = '';
-      document.getElementById('inpLimitMax').value = '';
-      document.getElementById('inpLimitSpent').value = 0;
-    }
-    document.getElementById('modalLimit').classList.add('open');
-  }
-
-  function saveLimitModal() {
-    const id = document.getElementById('inpLimitId').value;
-    const title = document.getElementById('inpLimitTitle').value.trim();
-    const limit = Number(document.getElementById('inpLimitMax').value);
-    const spent = Number(document.getElementById('inpLimitSpent').value) || 0;
-
-    if (!title || isNaN(limit) || limit < 0) return;
-
-    if (id) {
-      const item = state.limits.find(i => i.id === id);
-      if (item) {
-        item.title = title;
-        item.limit = limit;
-        item.spent = Math.max(0, spent);
-      }
-    } else {
-      state.limits.push({ id: 'l_' + Date.now(), title, limit, spent: Math.max(0, spent) });
-    }
-    saveState();
-    render();
-    closeModals();
-  }
-
-  function deleteLimit(id) {
-    state.limits = state.limits.filter(i => i.id !== id);
-    saveState();
-    render();
-  }
-
-  function quickSpend(id, delta) {
-    const item = state.limits.find(i => i.id === id);
-    if (item) {
-      item.spent = Math.max(0, Number(item.spent) + delta);
-      if (delta > 0) addLog(`${item.title}`, delta, 'minus');
-      saveState();
-      render();
-    }
-  }
-
-  function openCustomSpendModal(id) {
-    const item = state.limits.find(i => i.id === id);
-    if (!item) return;
-    document.getElementById('spendCustomTitle').innerText = `Трата: ${item.title}`;
-    document.getElementById('inpSpendLimitId').value = id;
-    document.getElementById('inpSpendCustomVal').value = '';
-    document.getElementById('modalSpendCustom').classList.add('open');
-  }
-
-  function confirmCustomSpend() {
-    const id = document.getElementById('inpSpendLimitId').value;
-    const val = Number(document.getElementById('inpSpendCustomVal').value);
-    if (!isNaN(val) && val !== 0) {
-      quickSpend(id, val);
-    }
-    closeModals();
-  }
-
-  // Настройка копилки
-  function openSavingsModal() {
-    document.getElementById('inpSavingsPct').value = state.savingsGoalPct;
-    document.getElementById('inpActualSaved').value = state.actualSaved || 0;
-    document.getElementById('modalSavings').classList.add('open');
-  }
-
-  function saveSavingsModal() {
-    const pct = Number(document.getElementById('inpSavingsPct').value);
-    const saved = Number(document.getElementById('inpActualSaved').value);
-    if (!isNaN(pct) && pct >= 0 && pct <= 90) state.savingsGoalPct = pct;
-    if (!isNaN(saved) && saved >= 0) state.actualSaved = saved;
-    saveState();
-    render();
-    closeModals();
-  }
-
-  // Обработчики ползунков
-  function updateIncomeSlider(val) {
-    state.income = Number(val);
-    saveState();
-    render();
-  }
-
-  function updateSavingsPctSlider(val) {
-    state.savingsGoalPct = Number(val);
-    saveState();
-    render();
-  }
-
-  function updateFixedSlider(id, val) {
-    const item = state.fixed.find(i => i.id === id);
-    if (item) {
-      item.amount = Number(val);
-      saveState();
-      render();
-    }
-  }
-
-  function updateLimitSlider(id, val) {
-    const item = state.limits.find(i => i.id === id);
-    if (item) {
-      item.limit = Number(val);
-      saveState();
-      render();
-    }
-  }
-
-  function clearHistory() {
-    state.history = [];
-    saveState();
-    render();
-  }
-
-  // Модалка </> для разработчика и связи с ботом
-  function openDevModal() {
-    document.getElementById('devUserIdLabel').innerText = USER_ID;
-    document.getElementById('devJsonArea').value = JSON.stringify(state, null, 2);
-    document.getElementById('modalDev').classList.add('open');
-  }
-
-  function copyJsonState() {
-    const area = document.getElementById('devJsonArea');
-    area.select();
-    navigator.clipboard.writeText(area.value);
-    alert('JSON скопирован в буфер обмена!');
-  }
-
-  function sendDataToTelegramBot() {
-    if (tg && typeof tg.sendData === 'function') {
-      tg.sendData(JSON.stringify(state));
-    } else {
-      alert('Отправка sendData доступна при открытии через кнопку Telegram-бота.');
-    }
-  }
-
-  function resetDefaultState() {
-    if (confirm('Сбросить все цифры к стандартным настройкам?')) {
-      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-      saveState();
-      render();
-      closeModals();
-    }
-  }
-
-  loadState();
+loadState();
 </script>
 </body>
 </html>
